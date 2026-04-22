@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumo — Telefonia & WhatsApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: rgba(255, 255, 255, 0.04);
+            --surface-hover: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #e4e4e7;
+            --text-dim: #a1a1aa;
+            --accent-tel: #818cf8;
+            --accent-tel-glow: rgba(129, 140, 248, 0.15);
+            --accent-zap: #4ade80;
+            --accent-zap-glow: rgba(74, 222, 128, 0.15);
+            --accent-orange: #fb923c;
+            --accent-amber: #fbbf24;
+            --accent-rose: #f43f5e;
+            --accent-cyan: #22d3ee;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 24px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(34, 197, 94, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Summary Flexbox */
+        .top-summary {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .summary-group {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-header .icon {
+            font-size: 18px;
+        }
+
+        .summary-cards {
+            display: flex;
+            gap: 16px;
+        }
+
+        .summary-cards .card {
+            flex: 1;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .header .subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Date Filter */
+        .date-filter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+        }
+
+        .date-filter label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .date-filter input[type="date"] {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .date-filter input[type="date"]:focus {
+            border-color: var(--accent-tel);
+            box-shadow: 0 0 0 3px var(--accent-tel-glow);
+        }
+
+        .date-filter input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7);
+            cursor: pointer;
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, var(--accent-tel), #818cf8);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 24px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--accent-tel-glow);
+        }
+
+        .filter-btn:active {
+            transform: translateY(0);
+        }
+
+        .date-separator {
+            font-size: 13px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        /* Section titles */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .section-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .section-title.tel .icon {
+            background: var(--accent-tel-glow);
+            color: var(--accent-tel);
+        }
+
+        .section-title.zap .icon {
+            background: var(--accent-zap-glow);
+            color: var(--accent-zap);
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 20px;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+        }
+
+        .card:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card .card-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .card .card-value {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .card .card-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .card-value.tel {
+            color: var(--accent-tel);
+        }
+
+        .card-value.zap {
+            color: var(--accent-zap);
+        }
+
+        .card-value.orange {
+            color: var(--accent-orange);
+        }
+
+        .card-value.amber {
+            color: var(--accent-amber);
+        }
+
+        /* Table */
+        .table-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            margin-bottom: 48px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr:first-child th {
+            text-align: center;
+            font-size: 10px;
+            border-bottom: 2px solid var(--border);
+            padding: 8px 10px;
+        }
+
+        thead tr:last-child th {
+            font-size: 10px;
+            padding: 10px 20px;
+        }
+
+        .th-tel { color: var(--accent-tel); border-bottom-color: var(--accent-tel) !important; }
+        .th-zap { color: var(--accent-zap); border-bottom-color: var(--accent-zap) !important; }
+
+        tbody td {
+            padding: 12px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--surface-hover);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .name-info .name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .name-info .ramal {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-atd {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        .badge-fin {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        .badge-ativo {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .badge-aguard {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .tempo-cell {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .bar-container {
+            width: 100%;
+            max-width: 140px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent-tel), #818cf8);
+            transition: width 0.6s ease;
+        }
+
+        .bar-fill.green {
+            background: linear-gradient(90deg, var(--accent-zap), #4ade80);
+        }
+
+        .totals-row td {
+            font-weight: 700;
+            background: rgba(99, 102, 241, 0.05);
+            border-top: 1px solid var(--border);
+            border-bottom: none !important;
+        }
+
+        .totals-row.zap td {
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .zap-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 700px) {
+            .zap-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .date-filter {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .pulse-dot.green {
+            background: var(--accent-zap);
+        }
+
+        .pulse-dot.amber {
+            background: var(--accent-amber);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 12px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .loading::after {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-tel);
+            border-radius: 50%;
+            margin: 16px auto 0;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header animate-in" style="animation-delay: 0.05s">
+            <h1>📊 Resumo de Atendimentos</h1>
+            <div class="subtitle">Telefonia (Outbound &gt; 0.30min) &amp; WhatsApp</div>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter animate-in" style="animation-delay: 0.1s">
+            <label for="dateFrom">De</label>
+            <input type="date" id="dateFrom">
+            <span class="date-separator">—</span>
+            <label for="dateTo">Até</label>
+            <input type="date" id="dateTo">
+            <button class="filter-btn" id="filterBtn" onclick="applyFilter()">Filtrar</button>
+        </div>
+
+        <!-- Content -->
+        <div id="dashboard-content">
+            <div class="loading">Carregando dados...</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer animate-in" style="animation-delay: 0.4s">
+            Dados atualizados em <span id="lastUpdate">--/--/----</span> · Telefonia: somente outbound > 0.30min
+        </div>
+    </div>
+
+    <script>
+        let RAW_DATA = null;
+
+        const AVATAR_COLORS = {
+            'Arnaldo Acerbi': ['#6366f1', '#818cf8'],
+            'Aurora Dutra': ['#8b5cf6', '#a78bfa'],
+            'Ana Helena': ['#ec4899', '#f472b6'],
+            'Juliana Sanches': ['#f97316', '#fb923c'],
+            'Fernando': ['#06b6d4', '#22d3ee'],
+            'Paulo Vinicius': ['#14b8a6', '#2dd4bf'],
+            'Angelita Francisco': ['#f43f5e', '#fb7185'],
+            'Alessandra': ['#a855f7', '#c084fc'],
+            'Roberto': ['#0ea5e9', '#38bdf8'],
+            'Vinicius': ['#84cc16', '#a3e635'],
+            'Poliane Medeiros': ['#e879f9', '#f0abfc'],
+            'Sem atendente': ['#64748b', '#94a3b8'],
+        };
+
+        const NAME_JOINER = {
+            'Arnaldo': 'Arnaldo Acerbi',
+            'Aurora': 'Aurora Dutra',
+            'Juliana': 'Juliana Sanches',
+            'Paulo': 'Paulo Vinicius',
+            'Poliane': 'Poliane Medeiros',
+            'Angelita': 'Angelita Francisco',
+            // Ana Helena, Fernando, Alessandra etc. já batem ou não precisam de alias
+        };
+
+        function normalizeName(name) {
+            return NAME_JOINER[name] || name;
+        }
+
+        function getFullOperatorInfo(name, ramal) {
+            const mappedName = normalizeName(name);
+            let sub = ramal ? `Ramal ${ramal}` : 'WhatsApp';
+            if (name === 'Sem atendente') sub = 'WhatsApp';
+            return { fullName: mappedName, subtitle: sub };
+        }
+
+        function getInitials(name) {
+            const parts = name.split(' ');
+            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function formatTempo(totalSeg) {
+            if (!totalSeg) return '0m 0s';
+            const h = Math.floor(totalSeg / 3600);
+            const m = Math.floor((totalSeg % 3600) / 60);
+            const s = totalSeg % 60;
+            if (h > 0) return `${h}h ${m}m ${s}s`;
+            return `${m}m ${s}s`;
+        }
+
+        function avatarHtml(name, colorMap) {
+            const colors = colorMap[name] || ['#64748b', '#94a3b8'];
+            return `<div class="avatar" style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]})">${getInitials(name)}</div>`;
+        }
+
+        function renderDashboard(telData, zapData) {
+            const container = document.getElementById('dashboard-content');
+
+            const operators = {};
+
+            // Helper to get or init operator
+            const getOp = (name, ramal) => {
+                const info = getFullOperatorInfo(name, ramal);
+                if (!operators[info.fullName]) {
+                    operators[info.fullName] = {
+                        name: info.fullName,
+                        subtitle: info.subtitle,
+                        tel_atend: 0,
+                        tel_tempo: 0,
+                        zap_total: 0,
+                        zap_fin: 0,
+                        zap_ativo: 0,
+                        zap_aguard: 0
+                    };
+                }
+                return operators[info.fullName];
+            };
+
+            // Process Telefonia
+            telData.forEach(r => {
+                const op = getOp(r.nome, r.ramal);
+                op.tel_atend++;
+                op.tel_tempo += r.tempo_seg;
+            });
+
+            // Process WhatsApp
+            zapData.forEach(r => {
+                const op = getOp(r.atendente || 'Sem atendente');
+                op.zap_total++;
+                if (r.status === 'FINALIZADO') op.zap_fin++;
+                else if (r.status === 'ATIVO') op.zap_ativo++;
+                else if (r.status === 'AGUARDANDO') op.zap_aguard++;
+            });
+
+            const rows = Object.values(operators).sort((a, b) => (b.tel_atend + b.zap_total) - (a.tel_atend + a.zap_total));
+
+            // Totals
+            const totals = {
+                tel_atend: rows.reduce((s, r) => s + r.tel_atend, 0),
+                tel_tempo: rows.reduce((s, r) => s + r.tel_tempo, 0),
+                zap_total: rows.reduce((s, r) => s + r.zap_total, 0),
+                zap_fin: rows.reduce((s, r) => s + r.zap_fin, 0),
+                zap_ativo: rows.reduce((s, r) => s + r.zap_ativo, 0),
+                zap_aguard: rows.reduce((s, r) => s + r.zap_aguard, 0)
+            };
+
+            const zapFinPct = totals.zap_total > 0 ? (totals.zap_fin / totals.zap_total * 100).toFixed(1) : '0';
+
+            // === BUILD HTML ===
+            let html = '';
+
+            // 1. TOP CARDS
+            html += `
+        <div class="top-summary animate-in" style="animation-delay: 0.15s">
+            <div class="summary-group">
+                <div class="summary-header"><span class="icon">📞</span> Telefonia — Total</div>
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-label">Atendimentos</div>
+                        <div class="card-value tel">${totals.tel_atend}</div>
+                        <div class="card-sub">&gt; 30 segundos</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Tempo Total</div>
+                        <div class="card-value tel" style="font-size: 24px">${formatTempo(totals.tel_tempo)}</div>
+                        <div class="card-sub">${totals.tel_tempo.toLocaleString('pt-BR')}s</div>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-group">
+                <div class="summary-header"><span class="icon">💬</span> WhatsApp — Total</div>
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-label">Atendimentos</div>
+                        <div class="card-value zap">${totals.zap_total}</div>
+                        <div class="card-sub">Total conversas</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Finalizados</div>
+                        <div class="card-value zap">${totals.zap_fin}</div>
+                        <div class="card-sub">${zapFinPct}% do WhatsApp</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+            // 2. UNIFIED TABLE
+            html += `
+        <div class="section-title animate-in" style="animation-delay: 0.25s">
+            <div class="icon" style="background: rgba(255,255,255,0.05); color: var(--text-dim)">👤</div>
+            <span>Performance por Operador</span>
+        </div>
+        <div class="table-wrapper animate-in" style="animation-delay: 0.3s">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="text-align: left; padding-left: 20px;">Operador / Ramal</th>
+                        <th colspan="2" class="th-tel">📞 Telefonia</th>
+                        <th colspan="4" class="th-zap">💬 WhatsApp</th>
+                    </tr>
+                    <tr>
+                        <th style="text-align: center">Atend.</th>
+                        <th style="text-align: center">Tempo Total</th>
+                        <th style="text-align: center">Conversas</th>
+                        <th style="text-align: center">Fin.</th>
+                        <th style="text-align: center">Ativo</th>
+                        <th style="text-align: center">Aguard.</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach(r => {
+                html += `
+                    <tr>
+                        <td>
+                            <div class="name-cell">
+                                ${avatarHtml(r.name, AVATAR_COLORS)}
+                                <div class="name-info">
+                                    <div class="name">${r.name}</div>
+                                    <div class="ramal">${r.subtitle}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend || '0'}</td>
+                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo)}</td>
+                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total || '0'}</td>
+                        <td style="text-align: center; color: #818cf8">${r.zap_fin || '0'}</td>
+                        <td style="text-align: center; color: #4ade80">${r.zap_ativo || '0'}</td>
+                        <td style="text-align: center; color: #fbbf24">${r.zap_aguard || '0'}</td>
+                    </tr>`;
+            });
+
+            html += `
+                    <tr class="totals-row">
+                        <td style="padding-left: 20px;">TOTAL CONSOLIDADO</td>
+                        <td style="text-align: center; color: #818cf8">${totals.tel_atend}</td>
+                        <td style="text-align: center">${formatTempo(totals.tel_tempo)}</td>
+                        <td style="text-align: center; color: #4ade80">${totals.zap_total}</td>
+                        <td style="text-align: center; color: #818cf8">${totals.zap_fin}</td>
+                        <td style="text-align: center; color: #4ade80">${totals.zap_ativo}</td>
+                        <td style="text-align: center; color: #fbbf24">${totals.zap_aguard}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+
+            container.innerHTML = html;
+        }
+
+        function applyFilter() {
+            if (!RAW_DATA) return;
+
+            const fromEl = document.getElementById('dateFrom');
+            const toEl = document.getElementById('dateTo');
+            const from = fromEl.value;
+            const to = toEl.value;
+
+            let telFiltered = RAW_DATA.telefonia;
+            let zapFiltered = RAW_DATA.whatsapp;
+
+            if (from) {
+                telFiltered = telFiltered.filter(r => r.data >= from);
+                zapFiltered = zapFiltered.filter(r => r.data >= from);
+            }
+            if (to) {
+                telFiltered = telFiltered.filter(r => r.data <= to);
+                zapFiltered = zapFiltered.filter(r => r.data <= to);
+            }
+
+            renderDashboard(telFiltered, zapFiltered);
+        }
+
+        // Load data com cache-busting para evitar travamento em versões antigas
+        fetch('full_data.json?t=' + new Date().getTime())
+            .then(r => {
+                if (!r.ok) throw new Error("Falha ao carregar arquivo de dados.");
+                return r.json();
+            })
+            .then(data => {
+                RAW_DATA = data;
+
+                // Set date inputs
+                document.getElementById('dateFrom').value = data.date_range.min;
+                document.getElementById('dateTo').value = data.date_range.max;
+
+                renderDashboard(data.telefonia, data.whatsapp);
+                
+                // Update footer with current date/time
+                const now = new Date();
+                const fmt = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+                document.getElementById('lastUpdate').textContent = fmt;
+            })
+            .catch(err => {
+                document.getElementById('dashboard-content').innerHTML =
+                    `<div class="loading" style="color: var(--accent-rose);">Erro ao carregar dados: ${err.message}</div>`;
+            });
+    </script>
+</body>
+
+</html>
