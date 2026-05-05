@@ -22,6 +22,8 @@
             --accent-amber: #fbbf24;
             --accent-rose: #f43f5e;
             --accent-cyan: #22d3ee;
+            --accent-purple: #a855f7;
+            --accent-purple-glow: rgba(168, 85, 247, 0.15);
             --radius: 12px;
             --radius-sm: 8px;
         }
@@ -311,6 +313,7 @@
 
         .th-tel { color: var(--accent-tel); border-bottom-color: var(--accent-tel) !important; }
         .th-zap { color: var(--accent-zap); border-bottom-color: var(--accent-zap) !important; }
+        .th-most { color: var(--accent-purple); border-bottom-color: var(--accent-purple) !important; }
 
         tbody td {
             padding: 12px 20px;
@@ -635,7 +638,8 @@
                         zap_total: 0,
                         zap_fin: 0,
                         zap_ativo: 0,
-                        zap_aguard: 0
+                        zap_aguard: 0,
+                        mostruario: 0
                     };
                 }
                 return operators[info.fullName];
@@ -657,7 +661,21 @@
                 else if (r.status === 'AGUARDANDO') op.zap_aguard++;
             });
 
-            const rows = Object.values(operators).sort((a, b) => (b.tel_atend + b.zap_total) - (a.tel_atend + a.zap_total));
+            // Process Mostruário
+            if (RAW_DATA.mostruario) {
+                RAW_DATA.mostruario.forEach(r => {
+                    // Se o filtro de data estiver ativo, aplicamos aqui também
+                    const from = document.getElementById('dateFrom').value;
+                    const to = document.getElementById('dateTo').value;
+                    if (from && r.data < from) return;
+                    if (to && r.data > to) return;
+
+                    const op = getOp(r.vendedor);
+                    op.mostruario++;
+                });
+            }
+
+            const rows = Object.values(operators).sort((a, b) => (b.tel_atend + b.zap_total + b.mostruario) - (a.tel_atend + a.zap_total + a.mostruario));
 
             // Totals
             const totals = {
@@ -666,7 +684,8 @@
                 zap_total: rows.reduce((s, r) => s + r.zap_total, 0),
                 zap_fin: rows.reduce((s, r) => s + r.zap_fin, 0),
                 zap_ativo: rows.reduce((s, r) => s + r.zap_ativo, 0),
-                zap_aguard: rows.reduce((s, r) => s + r.zap_aguard, 0)
+                zap_aguard: rows.reduce((s, r) => s + r.zap_aguard, 0),
+                mostruario: rows.reduce((s, r) => s + r.mostruario, 0)
             };
 
             const zapFinPct = totals.zap_total > 0 ? (totals.zap_fin / totals.zap_total * 100).toFixed(1) : '0';
@@ -707,6 +726,16 @@
                     </div>
                 </div>
             </div>
+            <div class="summary-group">
+                <div class="summary-header"><span class="icon">📦</span> Mostruário — Total</div>
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-label">Enviados</div>
+                        <div class="card-value" style="color: var(--accent-purple)">${totals.mostruario}</div>
+                        <div class="card-sub">Total no período</div>
+                    </div>
+                </div>
+            </div>
         </div>`;
 
             // 2. UNIFIED TABLE
@@ -722,6 +751,7 @@
                         <th rowspan="2" style="text-align: left; padding-left: 20px;">Operador / Ramal</th>
                         <th colspan="2" class="th-tel">📞 Telefonia</th>
                         <th colspan="4" class="th-zap">💬 WhatsApp</th>
+                        <th class="th-most">📦 Mostr.</th>
                     </tr>
                     <tr>
                         <th style="text-align: center">Atend.</th>
@@ -730,6 +760,7 @@
                         <th style="text-align: center">Fin.</th>
                         <th style="text-align: center">Ativo</th>
                         <th style="text-align: center">Aguard.</th>
+                        <th style="text-align: center">Total</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -752,6 +783,7 @@
                         <td style="text-align: center; color: #818cf8">${r.zap_fin || '0'}</td>
                         <td style="text-align: center; color: #4ade80">${r.zap_ativo || '0'}</td>
                         <td style="text-align: center; color: #fbbf24">${r.zap_aguard || '0'}</td>
+                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario || '0'}</td>
                     </tr>`;
             });
 
@@ -764,6 +796,7 @@
                         <td style="text-align: center; color: #818cf8">${totals.zap_fin}</td>
                         <td style="text-align: center; color: #4ade80">${totals.zap_ativo}</td>
                         <td style="text-align: center; color: #fbbf24">${totals.zap_aguard}</td>
+                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario}</td>
                     </tr>
                 </tbody>
             </table>

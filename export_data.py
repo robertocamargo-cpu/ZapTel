@@ -75,13 +75,61 @@ else:
     zap_records = []
     zap_dates = pd.Series([pd.Timestamp.now()]) # Fallback
 
+# === MOSTRUÁRIO ===
+path_mostruario = os.path.join(BASE_DIR, 'mostruario.xlsx')
+mostruario_records = []
+if os.path.exists(path_mostruario):
+    print("Processando Mostruário...")
+    excel_mostruario = pd.ExcelFile(path_mostruario)
+    
+    mes_map = {
+        'Janeiro': '01', 'Fevereiro': '02', 'Março': '03', 'Abril': '04',
+        'Maio': '05', 'Junho': '06', 'Julho': '07', 'Agosto': '08',
+        'Setembro': '09', 'Outubro': '10', 'Novembro': '11', 'Dezembro': '12'
+    }
+    
+    # Ano fixo como 2026 conforme contexto do sistema
+    ANO = "2026"
+    
+    for sheet in excel_mostruario.sheet_names:
+        if sheet in mes_map:
+            # Lê a planilha, pulando a primeira linha (que parece ser informativa/vazia)
+            # e usando a segunda como cabeçalho
+            df_mes = pd.read_excel(path_mostruario, sheet_name=sheet, skiprows=1)
+            
+            if not df_mes.empty and 'Vendedor' in df_mes.columns:
+                # Remove linhas onde o vendedor é nulo
+                vendedores = df_mes['Vendedor'].dropna()
+                
+                mes_num = mes_map[sheet]
+                data_iso = f"{ANO}-{mes_num}-01" # Data base do mês
+                
+                for v in vendedores:
+                    mostruario_records.append({
+                        'vendedor': str(v).strip(),
+                        'data': data_iso
+                    })
+    
+    print(f"Mostruário: {len(mostruario_records)} registros processados.")
+else:
+    print("AVISO: Arquivo de Mostruário não encontrado.")
+
 # Pegar range geral
-all_min = min(tel_dates.min(), zap_dates.min()).strftime('%Y-%m-%d')
-all_max = max(tel_dates.max(), zap_dates.max()).strftime('%Y-%m-%d')
+# Consideramos também as datas do mostruário se existirem
+all_dates = []
+if not tel_dates.empty: all_dates.append(tel_dates.min()); all_dates.append(tel_dates.max())
+if not zap_dates.empty: all_dates.append(zap_dates.min()); all_dates.append(zap_dates.max())
+
+if all_dates:
+    all_min = min(all_dates).strftime('%Y-%m-%d')
+    all_max = max(all_dates).strftime('%Y-%m-%d')
+else:
+    all_min = all_max = pd.Timestamp.now().strftime('%Y-%m-%d')
 
 result = {
     'telefonia': tel_records,
     'whatsapp': zap_records,
+    'mostruario': mostruario_records,
     'date_range': {'min': all_min, 'max': all_max}
 }
 
