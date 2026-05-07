@@ -20,7 +20,7 @@ if not os.path.exists(file_tel):
 df_tel = pd.read_excel(file_tel)
 
 ramal_nome = {
-    1000: 'Roberto', 1001: 'Ana Helena', 1002: 'Paulo', 1003: 'Arnaldo',
+    1000: 'Roberto', 1001: 'Ana Helena', 1002: 'Paulo', 1003: 'Arnaldo Acerbi',
     1004: 'Alessandra', 1005: 'Juliana', 1006: 'Angelita Francisco', 1007: 'Fernando',
     1008: 'Aurora', 1010: 'Vinicius', 1012: 'Poliane',
 }

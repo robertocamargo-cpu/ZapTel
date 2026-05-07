@@ -58,7 +58,7 @@ async def download_report():
 
             # Configurar datas (Hoje e Hoje - 1 mês)
             now = datetime.now()
-            start_date = now - timedelta(days=31)
+            start_date = now - timedelta(days=90)
             date_str = f"{start_date.strftime('%Y-%m-%d')} 00:00 - {now.strftime('%Y-%m-%d')} 23:59"
             print(f"Filtrando período: {date_str}")
 

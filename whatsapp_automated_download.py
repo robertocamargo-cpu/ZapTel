@@ -2,6 +2,8 @@ import asyncio
 import os
 import random
 from datetime import datetime, timedelta
+import calendar
+import pandas as pd
 from camoufox.async_api import AsyncCamoufox
 
 # Configurações (Caminho absoluto baseado no script para evitar system32)
@@ -39,99 +41,137 @@ async def run_automated_download():
 
         print("Página de relatórios carregada. Configurando filtros...", flush=True)
         
-        # Calcula datas (últimos 31 dias)
-        ate = datetime.now()
-        de = ate - timedelta(days=31)
-        str_de = de.strftime("%d/%m/%Y")
-        str_ate = ate.strftime("%d/%m/%Y")
-        
-        # Seletores (baseados no download_whatsapp.py e recon)
+        # Helper function to get the date ranges
+        def get_3_months_ranges():
+            now = datetime.now()
+            ranges = []
+            # Mês 1 (Atual)
+            start_m1 = datetime(now.year, now.month, 1)
+            end_m1 = now
+            ranges.append((start_m1.strftime("%d/%m/%Y"), end_m1.strftime("%d/%m/%Y")))
+            # Mês 2 (Anterior)
+            end_m2 = start_m1 - timedelta(days=1)
+            start_m2 = datetime(end_m2.year, end_m2.month, 1)
+            ranges.append((start_m2.strftime("%d/%m/%Y"), end_m2.strftime("%d/%m/%Y")))
+            # Mês 3 (Retrasado)
+            end_m3 = start_m2 - timedelta(days=1)
+            start_m3 = datetime(end_m3.year, end_m3.month, 1)
+            ranges.append((start_m3.strftime("%d/%m/%Y"), end_m3.strftime("%d/%m/%Y")))
+            return ranges
+
+        date_ranges = get_3_months_ranges()
+        downloaded_files = []
+
+        # Seletores
         sel_de = 'input[ng-model="filtro.dataCriacaoDe"]'
         sel_ate = 'input[ng-model="filtro.dataCriacaoAte"]'
-        # Tenta múltiplos seletores para o botão de busca
         btn_buscar_selectors = ['button[title="Buscar"]', 'button:has-text("Buscar")', 'button[ng-click*="onSearch"]']
-        
-        try:
-            # Aguarda campo de data
-            print("Aguardando campos de data...", flush=True)
-            await page.wait_for_selector(sel_de, timeout=30000)
-            
-            print(f"Filtrando de {str_de} até {str_ate}...", flush=True)
-            
-            # Preenche Data De
-            await page.click(sel_de)
-            await page.fill(sel_de, "")
-            await page.type(sel_de, str_de, delay=100)
-            await page.keyboard.press("Enter")
-            
-            await asyncio.sleep(1)
-            
-            # Preenche Data Ate
-            await page.click(sel_ate)
-            await page.fill(sel_ate, "")
-            await page.type(sel_ate, str_ate, delay=100)
-            await page.keyboard.press("Enter")
-            
-            await asyncio.sleep(2)
-            
-            # Clica em Buscar
-            print("Localizando botão de BUSCAR...", flush=True)
-            btn_buscar = None
-            for sel in btn_buscar_selectors:
-                try:
-                    btn_buscar = await page.wait_for_selector(sel, timeout=5000)
-                    if btn_buscar:
-                        print(f"Botão Buscar encontrado: {sel}", flush=True)
-                        break
-                except: continue
-            
-            if btn_buscar:
-                print("Clicando em BUSCAR...", flush=True)
-                await btn_buscar.click()
-            else:
-                print("AVISO: Botão de BUSCAR não encontrado via seletores esperados.", flush=True)
-            
-            # Aguarda resultados
-            print("Aguardando carregamento dos dados (10s)...", flush=True)
-            await asyncio.sleep(10)
-            
-            # Procura o botão de exportação
-            print("Localizando botão de exportação...", flush=True)
-            selectors_export = [
-                "button.bgm-teal", 
-                "button.bgm-green",
-                "button[ng-click*='exportRelatorio']",
-                "button[ng-if*='DownloadReport']",
-                "button:has(.zmdi-download)",
-                "button[title*='Exportar']"
-            ]
-            
-            btn_export = None
-            for sel in selectors_export:
-                try:
-                    btn_export = await page.wait_for_selector(sel, timeout=3000, state="visible")
-                    if btn_export:
-                        print(f"Botão Exportação encontrado: {sel}", flush=True)
-                        break
-                except: continue
-                
-            if not btn_export:
-                print("ERRO: Botão de exportação não encontrado após a busca.", flush=True)
-                await page.screenshot(path="export_not_found.png")
-                return
+        selectors_export = [
+            "button.bgm-teal", 
+            "button.bgm-green",
+            "button[ng-click*='exportRelatorio']",
+            "button[ng-if*='DownloadReport']",
+            "button:has(.zmdi-download)",
+            "button[title*='Exportar']"
+        ]
 
-            # Gerencia o download
-            print("Disparando download...", flush=True)
-            async with page.expect_download(timeout=60000) as download_info:
-                await btn_export.click()
-                download = await download_info.value
+        try:
+            # Aguarda os campos estarem visíveis inicialmente
+            await page.wait_for_selector(sel_de, timeout=30000)
+
+            for i, (str_de, str_ate) in enumerate(date_ranges):
+                print(f"--- Processando Mês {i+1}/3: de {str_de} até {str_ate} ---", flush=True)
                 
-                # Salva o arquivo
-                save_path = os.path.join(BASE_DIR, FILENAME)
-                await download.save_as(save_path)
-                print(f"--- SUCESSO! Relatorio salvo em: {save_path} ---", flush=True)
+                # Preenche Data De
+                await page.click(sel_de)
+                await page.fill(sel_de, "")
+                await page.type(sel_de, str_de, delay=100)
+                await page.keyboard.press("Enter")
+                await asyncio.sleep(1)
                 
+                # Preenche Data Ate
+                await page.click(sel_ate)
+                await page.fill(sel_ate, "")
+                await page.type(sel_ate, str_ate, delay=100)
+                await page.keyboard.press("Enter")
+                await asyncio.sleep(2)
+                
+                # Clica em Buscar
+                print("Localizando botão de BUSCAR...", flush=True)
+                btn_buscar = None
+                for sel in btn_buscar_selectors:
+                    try:
+                        btn_buscar = await page.wait_for_selector(sel, timeout=5000)
+                        if btn_buscar:
+                            break
+                    except: continue
+                
+                if btn_buscar:
+                    print("Clicando em BUSCAR...", flush=True)
+                    await btn_buscar.click()
+                else:
+                    print("AVISO: Botão de BUSCAR não encontrado via seletores esperados.", flush=True)
+                
+                # Aguarda carregamento
+                print("Aguardando carregamento dos dados (10s)...", flush=True)
+                await asyncio.sleep(10)
+                
+                # Clica em Exportar
+                print("Localizando botão de exportação...", flush=True)
+                btn_export = None
+                for sel in selectors_export:
+                    try:
+                        btn_export = await page.wait_for_selector(sel, timeout=3000, state="visible")
+                        if btn_export:
+                            break
+                    except: continue
+                    
+                if not btn_export:
+                    print(f"ERRO: Botão de exportação não encontrado para o mês {i+1}.", flush=True)
+                    await page.screenshot(path=f"export_not_found_m{i+1}.png")
+                    continue
+
+                # Download
+                print("Disparando download...", flush=True)
+                async with page.expect_download(timeout=60000) as download_info:
+                    await btn_export.click()
+                    download = await download_info.value
+                    
+                    temp_filename = f"zap_temp_m{i+1}.xlsx"
+                    save_path = os.path.join(BASE_DIR, temp_filename)
+                    await download.save_as(save_path)
+                    print(f"Relatório temporário salvo: {save_path}", flush=True)
+                    downloaded_files.append(save_path)
+                
+                # Um pequeno delay entre as buscas
+                await asyncio.sleep(3)
+
+            # --- CONSOLIDAR RELATÓRIOS ---
+            if downloaded_files:
+                print("--- Consolidando relatórios ---", flush=True)
+                all_dataframes = []
+                for file_path in downloaded_files:
+                    try:
+                        df = pd.read_excel(file_path)
+                        all_dataframes.append(df)
+                    except Exception as df_e:
+                        print(f"Erro ao ler {file_path}: {df_e}")
+                
+                if all_dataframes:
+                    df_final = pd.concat(all_dataframes, ignore_index=True)
+                    final_path = os.path.join(BASE_DIR, FILENAME)
+                    df_final.to_excel(final_path, index=False)
+                    print(f"--- SUCESSO! Relatório consolidado salvo em: {final_path} ---", flush=True)
+                
+                # Limpeza dos temporários
+                for file_path in downloaded_files:
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+            else:
+                print("Nenhum relatório foi baixado com sucesso.", flush=True)
+
         except Exception as e:
+
             print(f"Erro durante o processo: {e}", flush=True)
             await page.screenshot(path="automation_error.png")
 

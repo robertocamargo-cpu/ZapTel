@@ -303,21 +303,55 @@
             text-align: center;
             font-size: 10px;
             border-bottom: 2px solid var(--border);
-            padding: 8px 10px;
+            padding: 4px 2px;
+        }
+
+        thead th {
+            padding: 4px 2px;
         }
 
         thead tr:last-child th {
-            font-size: 10px;
-            padding: 10px 20px;
+            font-size: 9px;
+            padding: 4px 2px;
+            color: var(--text-dim);
         }
 
         .th-tel { color: var(--accent-tel); border-bottom-color: var(--accent-tel) !important; }
         .th-zap { color: var(--accent-zap); border-bottom-color: var(--accent-zap) !important; }
         .th-most { color: var(--accent-purple); border-bottom-color: var(--accent-purple) !important; }
 
+        /* Sorting Styles */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        th.sortable:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sort-icon {
+            font-size: 10px;
+            margin-left: 2px;
+            opacity: 0.3;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        th.active-sort .sort-icon {
+            opacity: 1;
+            color: inherit;
+        }
+
+        th.active-sort {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
         tbody td {
-            padding: 12px 20px;
-            font-size: 14px;
+            padding: 6px 4px;
+            font-size: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             vertical-align: middle;
         }
@@ -564,6 +598,22 @@
 
     <script>
         let RAW_DATA = null;
+        let CURRENT_SORT = { key: 'total_score', dir: 'desc' };
+
+        function toggleSort(key) {
+            if (CURRENT_SORT.key === key) {
+                CURRENT_SORT.dir = CURRENT_SORT.dir === 'desc' ? 'asc' : 'desc';
+            } else {
+                CURRENT_SORT.key = key;
+                CURRENT_SORT.dir = 'desc';
+            }
+            applyFilter(); // Reaplica o filtro e re-renderiza com a nova ordenação
+        }
+
+        function getSortIcon(key) {
+            if (CURRENT_SORT.key !== key) return '<span class="sort-icon">↕</span>';
+            return CURRENT_SORT.dir === 'desc' ? '<span class="sort-icon">↓</span>' : '<span class="sort-icon">↑</span>';
+        }
 
         const AVATAR_COLORS = {
             'Arnaldo Acerbi': ['#6366f1', '#818cf8'],
@@ -582,6 +632,7 @@
 
         const NAME_JOINER = {
             'Arnaldo': 'Arnaldo Acerbi',
+            'Arnaldo César': 'Arnaldo Acerbi',
             'Aurora': 'Aurora Dutra',
             'Juliana': 'Juliana Sanches',
             'Paulo': 'Paulo Vinicius',
@@ -624,71 +675,163 @@
         function renderDashboard(telData, zapData) {
             const container = document.getElementById('dashboard-content');
 
+            function formatYMD(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            const today = new Date();
+            const todayStr = formatYMD(today);
+            const currentMonthStr = todayStr.substring(0, 7);
+            const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const prevMonthStr = formatYMD(prevMonthDate).substring(0, 7);
+
             const operators = {};
 
-            // Helper to get or init operator
             const getOp = (name, ramal) => {
                 const info = getFullOperatorInfo(name, ramal);
                 if (!operators[info.fullName]) {
                     operators[info.fullName] = {
                         name: info.fullName,
                         subtitle: info.subtitle,
-                        tel_atend: 0,
-                        tel_tempo: 0,
-                        zap_total: 0,
-                        zap_fin: 0,
+                        tel_atend: { hoje: 0, mes: 0, mes_passado: 0 },
+                        tel_tempo: { hoje: 0, mes: 0, mes_passado: 0 },
+                        zap_total: { hoje: 0, mes: 0, mes_passado: 0 },
+                        zap_fin: { hoje: 0, mes: 0, mes_passado: 0 },
                         zap_ativo: 0,
                         zap_aguard: 0,
-                        mostruario: 0
+                        mostruario: { hoje: 0, mes: 0, mes_passado: 0 },
+                        total_tel_atend: 0,
+                        total_tel_tempo: 0,
+                        total_zap_total: 0,
+                        total_zap_fin: 0,
+                        total_zap_ativo: 0,
+                        total_zap_aguard: 0,
+                        total_mostruario: 0
                     };
                 }
                 return operators[info.fullName];
             };
 
+            function addMetric(opObj, metricPrefix, dateStr, amount = 1) {
+                opObj['total_' + metricPrefix] += amount;
+                if (!dateStr) return;
+                if (dateStr === todayStr) {
+                    opObj[metricPrefix].hoje += amount;
+                    opObj[metricPrefix].mes += amount;
+                } else if (dateStr.startsWith(currentMonthStr)) {
+                    opObj[metricPrefix].mes += amount;
+                } else if (dateStr.startsWith(prevMonthStr)) {
+                    opObj[metricPrefix].mes_passado += amount;
+                }
+            }
+
             // Process Telefonia
             telData.forEach(r => {
                 const op = getOp(r.nome, r.ramal);
-                op.tel_atend++;
-                op.tel_tempo += r.tempo_seg;
+                addMetric(op, 'tel_atend', r.data, 1);
+                addMetric(op, 'tel_tempo', r.data, r.tempo_seg);
             });
 
             // Process WhatsApp
             zapData.forEach(r => {
                 const op = getOp(r.atendente || 'Sem atendente');
-                op.zap_total++;
-                if (r.status === 'FINALIZADO') op.zap_fin++;
-                else if (r.status === 'ATIVO') op.zap_ativo++;
-                else if (r.status === 'AGUARDANDO') op.zap_aguard++;
+                addMetric(op, 'zap_total', r.data, 1);
+                if (r.status === 'FINALIZADO') {
+                    addMetric(op, 'zap_fin', r.data, 1);
+                } else if (r.status === 'ATIVO') {
+                    op.zap_ativo++;
+                    op.total_zap_ativo++;
+                } else if (r.status === 'AGUARDANDO') {
+                    op.zap_aguard++;
+                    op.total_zap_aguard++;
+                }
             });
 
             // Process Mostruário
             if (RAW_DATA.mostruario) {
                 RAW_DATA.mostruario.forEach(r => {
-                    // Se o filtro de data estiver ativo, aplicamos aqui também
                     const from = document.getElementById('dateFrom').value;
                     const to = document.getElementById('dateTo').value;
                     if (from && r.data < from) return;
                     if (to && r.data > to) return;
 
                     const op = getOp(r.vendedor);
-                    op.mostruario++;
+                    addMetric(op, 'mostruario', r.data, 1);
                 });
             }
 
-            const rows = Object.values(operators).sort((a, b) => (b.tel_atend + b.zap_total + b.mostruario) - (a.tel_atend + a.zap_total + a.mostruario));
+            // Custom sort logic
+            const rows = Object.values(operators);
+            rows.sort((a, b) => {
+                let valA, valB;
+
+                if (CURRENT_SORT.key === 'total_score') {
+                    valA = a.total_tel_atend + a.total_zap_total + a.total_mostruario;
+                    valB = b.total_tel_atend + b.total_zap_total + b.total_mostruario;
+                } else if (CURRENT_SORT.key === 'name') {
+                    valA = a.name.toLowerCase();
+                    valB = b.name.toLowerCase();
+                } else {
+                    const parts = CURRENT_SORT.key.split('_');
+                    if (parts.length > 2 && ['hoje', 'mes', 'passado'].includes(parts[parts.length - 1])) {
+                        let bucket = parts.pop();
+                        if (bucket === 'passado') {
+                            parts.pop(); // tira o 'mes'
+                            bucket = 'mes_passado';
+                        }
+                        const prefix = parts.join('_');
+                        valA = (a[prefix] && a[prefix][bucket]) || 0;
+                        valB = (b[prefix] && b[prefix][bucket]) || 0;
+                    } else if (CURRENT_SORT.key.endsWith('_mes')) {
+                        const prefix = CURRENT_SORT.key.replace('_mes', '');
+                        valA = (a[prefix] && a[prefix].mes) || 0;
+                        valB = (b[prefix] && b[prefix].mes) || 0;
+                    } else if (CURRENT_SORT.key.endsWith('_hoje')) {
+                        const prefix = CURRENT_SORT.key.replace('_hoje', '');
+                        valA = (a[prefix] && a[prefix].hoje) || 0;
+                        valB = (b[prefix] && b[prefix].hoje) || 0;
+                    } else {
+                        valA = a[CURRENT_SORT.key] || 0;
+                        valB = b[CURRENT_SORT.key] || 0;
+                    }
+                }
+
+                if (valA < valB) return CURRENT_SORT.dir === 'desc' ? 1 : -1;
+                if (valA > valB) return CURRENT_SORT.dir === 'desc' ? -1 : 1;
+                return 0;
+            });
 
             // Totals
             const totals = {
-                tel_atend: rows.reduce((s, r) => s + r.tel_atend, 0),
-                tel_tempo: rows.reduce((s, r) => s + r.tel_tempo, 0),
-                zap_total: rows.reduce((s, r) => s + r.zap_total, 0),
-                zap_fin: rows.reduce((s, r) => s + r.zap_fin, 0),
-                zap_ativo: rows.reduce((s, r) => s + r.zap_ativo, 0),
-                zap_aguard: rows.reduce((s, r) => s + r.zap_aguard, 0),
-                mostruario: rows.reduce((s, r) => s + r.mostruario, 0)
+                tel_atend: { hoje: 0, mes: 0, mes_passado: 0 },
+                tel_tempo: { hoje: 0, mes: 0, mes_passado: 0 },
+                zap_total: { hoje: 0, mes: 0, mes_passado: 0 },
+                zap_fin: { hoje: 0, mes: 0, mes_passado: 0 },
+                zap_ativo: 0,
+                zap_aguard: 0,
+                mostruario: { hoje: 0, mes: 0, mes_passado: 0 },
+                
+                total_tel_atend: rows.reduce((s, r) => s + r.total_tel_atend, 0),
+                total_tel_tempo: rows.reduce((s, r) => s + r.total_tel_tempo, 0),
+                total_zap_total: rows.reduce((s, r) => s + r.total_zap_total, 0),
+                total_zap_fin: rows.reduce((s, r) => s + r.total_zap_fin, 0),
+                total_zap_ativo: rows.reduce((s, r) => s + r.total_zap_ativo, 0),
+                total_zap_aguard: rows.reduce((s, r) => s + r.total_zap_aguard, 0),
+                total_mostruario: rows.reduce((s, r) => s + r.total_mostruario, 0)
             };
 
-            const zapFinPct = totals.zap_total > 0 ? (totals.zap_fin / totals.zap_total * 100).toFixed(1) : '0';
+            ['tel_atend', 'tel_tempo', 'zap_total', 'zap_fin', 'mostruario'].forEach(metric => {
+                ['hoje', 'mes', 'mes_passado'].forEach(bucket => {
+                    totals[metric][bucket] = rows.reduce((s, r) => s + r[metric][bucket], 0);
+                });
+            });
+            totals.zap_ativo = rows.reduce((s, r) => s + r.zap_ativo, 0);
+            totals.zap_aguard = rows.reduce((s, r) => s + r.zap_aguard, 0);
+
+            const zapFinPct = totals.total_zap_total > 0 ? (totals.total_zap_fin / totals.total_zap_total * 100).toFixed(1) : '0';
 
             // === BUILD HTML ===
             let html = '';
@@ -697,50 +840,50 @@
             html += `
         <div class="top-summary animate-in" style="animation-delay: 0.15s">
             <div class="summary-group">
-                <div class="summary-header"><span class="icon">📞</span> Telefonia — Total</div>
+                <div class="summary-header"><span class="icon">📞</span> Telefonia — Período Filtrado</div>
                 <div class="summary-cards">
                     <div class="card">
                         <div class="card-label">Atendimentos</div>
-                        <div class="card-value tel">${totals.tel_atend}</div>
+                        <div class="card-value tel">${totals.total_tel_atend}</div>
                         <div class="card-sub">&gt; 30 segundos</div>
                     </div>
                     <div class="card">
                         <div class="card-label">Tempo Total</div>
-                        <div class="card-value tel" style="font-size: 24px">${formatTempo(totals.tel_tempo)}</div>
-                        <div class="card-sub">${totals.tel_tempo.toLocaleString('pt-BR')}s</div>
+                        <div class="card-value tel" style="font-size: 24px">${formatTempo(totals.total_tel_tempo)}</div>
+                        <div class="card-sub">${totals.total_tel_tempo.toLocaleString('pt-BR')}s</div>
                     </div>
                 </div>
             </div>
             <div class="summary-group">
-                <div class="summary-header"><span class="icon">💬</span> WhatsApp — Total</div>
+                <div class="summary-header"><span class="icon">💬</span> WhatsApp — Período Filtrado</div>
                 <div class="summary-cards">
                     <div class="card">
-                        <div class="card-label">Atendimentos</div>
-                        <div class="card-value zap">${totals.zap_total}</div>
-                        <div class="card-sub">Total conversas</div>
+                        <div class="card-label">Conversas</div>
+                        <div class="card-value zap">${totals.total_zap_total}</div>
+                        <div class="card-sub">Iniciadas ou recebidas</div>
                     </div>
                     <div class="card">
                         <div class="card-label">Finalizados</div>
-                        <div class="card-value zap">${totals.zap_fin}</div>
-                        <div class="card-sub">${zapFinPct}% do WhatsApp</div>
+                        <div class="card-value zap">${totals.total_zap_fin}</div>
+                        <div class="card-sub">${zapFinPct}% de resolução</div>
                     </div>
                 </div>
             </div>
             <div class="summary-group">
-                <div class="summary-header"><span class="icon">📦</span> Mostruário — Total</div>
+                <div class="summary-header"><span class="icon">📦</span> Mostruários — Período Filtrado</div>
                 <div class="summary-cards">
                     <div class="card">
-                        <div class="card-label">Enviados</div>
-                        <div class="card-value" style="color: var(--accent-purple)">${totals.mostruario}</div>
-                        <div class="card-sub">Total no período</div>
+                        <div class="card-label">Mostruários</div>
+                        <div class="card-value" style="color: var(--accent-purple)">${totals.total_mostruario}</div>
+                        <div class="card-sub">Status: Enviado</div>
                     </div>
                 </div>
             </div>
         </div>`;
 
-            // 2. UNIFIED TABLE
+            // 2. TABLE
             html += `
-        <div class="section-title animate-in" style="animation-delay: 0.25s">
+        <div class="table-header animate-in" style="animation-delay: 0.2s">
             <div class="icon" style="background: rgba(255,255,255,0.05); color: var(--text-dim)">👤</div>
             <span>Performance por Operador</span>
         </div>
@@ -748,19 +891,42 @@
             <table>
                 <thead>
                     <tr>
-                        <th rowspan="2" style="text-align: left; padding-left: 20px;">Operador / Ramal</th>
-                        <th colspan="2" class="th-tel">📞 Telefonia</th>
-                        <th colspan="4" class="th-zap">💬 WhatsApp</th>
-                        <th class="th-most">📦 Mostr.</th>
+                        <th rowspan="3" class="sortable ${CURRENT_SORT.key === 'name' ? 'active-sort' : ''}" onclick="toggleSort('name')" style="text-align: left; padding-left: 20px; vertical-align: middle;">
+                            Operador / Ramal ${getSortIcon('name')}
+                        </th>
+                        <th colspan="6" class="th-tel">📞 Telefonia</th>
+                        <th colspan="8" class="th-zap">💬 WhatsApp</th>
+                        <th colspan="3" class="th-most">📦 Mostr.</th>
                     </tr>
                     <tr>
-                        <th style="text-align: center">Atend.</th>
-                        <th style="text-align: center">Tempo Total</th>
-                        <th style="text-align: center">Conversas</th>
-                        <th style="text-align: center">Fin.</th>
-                        <th style="text-align: center">Ativo</th>
-                        <th style="text-align: center">Aguard.</th>
-                        <th style="text-align: center">Total</th>
+                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Atendimentos</th>
+                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Tempo total</th>
+                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Conversas</th>
+                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Finalizados</th>
+                        <th rowspan="2" class="sortable ${CURRENT_SORT.key === 'zap_ativo' ? 'active-sort' : ''}" onclick="toggleSort('zap_ativo')" style="text-align: center; vertical-align: middle;">Abertos ${getSortIcon('zap_ativo')}</th>
+                        <th rowspan="2" class="sortable ${CURRENT_SORT.key === 'zap_aguard' ? 'active-sort' : ''}" onclick="toggleSort('zap_aguard')" style="text-align: center; vertical-align: middle;">Aguardando ${getSortIcon('zap_aguard')}</th>
+                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Mostruários</th>
+                    </tr>
+                    <tr style="font-size: 11px; color: var(--text-dim);">
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_hoje' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_hoje')" style="text-align: center">Hoje ${getSortIcon('tel_atend_hoje')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_mes' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_mes')" style="text-align: center">Este mês ${getSortIcon('tel_atend_mes')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('tel_atend_mes_passado')}</th>
+
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_hoje' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_hoje')" style="text-align: center">Hoje ${getSortIcon('tel_tempo_hoje')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_mes' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_mes')" style="text-align: center">Este mês ${getSortIcon('tel_tempo_mes')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('tel_tempo_mes_passado')}</th>
+
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_hoje' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_hoje')" style="text-align: center">Hoje ${getSortIcon('zap_total_hoje')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_mes' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_mes')" style="text-align: center">Este mês ${getSortIcon('zap_total_mes')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('zap_total_mes_passado')}</th>
+
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_hoje' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_hoje')" style="text-align: center">Hoje ${getSortIcon('zap_fin_hoje')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_mes' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_mes')" style="text-align: center">Este mês ${getSortIcon('zap_fin_mes')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('zap_fin_mes_passado')}</th>
+
+                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_hoje' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_hoje')" style="text-align: center">Hoje ${getSortIcon('mostruario_hoje')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_mes' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_mes')" style="text-align: center">Este mês ${getSortIcon('mostruario_mes')}</th>
+                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('mostruario_mes_passado')}</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -777,26 +943,57 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend || '0'}</td>
-                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo)}</td>
-                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total || '0'}</td>
-                        <td style="text-align: center; color: #818cf8">${r.zap_fin || '0'}</td>
-                        <td style="text-align: center; color: #4ade80">${r.zap_ativo || '0'}</td>
-                        <td style="text-align: center; color: #fbbf24">${r.zap_aguard || '0'}</td>
-                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario || '0'}</td>
+                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.hoje || '0'}</td>
+                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.mes || '0'}</td>
+                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.mes_passado || '0'}</td>
+
+                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.hoje)}</td>
+                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.mes)}</td>
+                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.mes_passado)}</td>
+
+                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.hoje || '0'}</td>
+                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.mes || '0'}</td>
+                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.mes_passado || '0'}</td>
+
+                        <td style="text-align: center; color: #818cf8">${r.zap_fin.hoje || '0'}</td>
+                        <td style="text-align: center; color: #818cf8">${r.zap_fin.mes || '0'}</td>
+                        <td style="text-align: center; color: #818cf8">${r.zap_fin.mes_passado || '0'}</td>
+
+                        <td style="text-align: center; color: #4ade80; font-weight: 600">${r.zap_ativo || '0'}</td>
+                        <td style="text-align: center; color: #fbbf24; font-weight: 600">${r.zap_aguard || '0'}</td>
+
+                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.hoje || '0'}</td>
+                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.mes || '0'}</td>
+                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.mes_passado || '0'}</td>
                     </tr>`;
             });
 
             html += `
                     <tr class="totals-row">
                         <td style="padding-left: 20px;">TOTAL CONSOLIDADO</td>
-                        <td style="text-align: center; color: #818cf8">${totals.tel_atend}</td>
-                        <td style="text-align: center">${formatTempo(totals.tel_tempo)}</td>
-                        <td style="text-align: center; color: #4ade80">${totals.zap_total}</td>
-                        <td style="text-align: center; color: #818cf8">${totals.zap_fin}</td>
+
+                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.hoje}</td>
+                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.mes}</td>
+                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.mes_passado}</td>
+
+                        <td style="text-align: center">${formatTempo(totals.tel_tempo.hoje)}</td>
+                        <td style="text-align: center">${formatTempo(totals.tel_tempo.mes)}</td>
+                        <td style="text-align: center">${formatTempo(totals.tel_tempo.mes_passado)}</td>
+
+                        <td style="text-align: center; color: #4ade80">${totals.zap_total.hoje}</td>
+                        <td style="text-align: center; color: #4ade80">${totals.zap_total.mes}</td>
+                        <td style="text-align: center; color: #4ade80">${totals.zap_total.mes_passado}</td>
+
+                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.hoje}</td>
+                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.mes}</td>
+                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.mes_passado}</td>
+
                         <td style="text-align: center; color: #4ade80">${totals.zap_ativo}</td>
                         <td style="text-align: center; color: #fbbf24">${totals.zap_aguard}</td>
-                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario}</td>
+
+                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.hoje}</td>
+                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.mes}</td>
+                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.mes_passado}</td>
                     </tr>
                 </tbody>
             </table>
