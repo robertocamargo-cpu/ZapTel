@@ -1,0 +1,291 @@
+diff name:ublock-annoyances lines:8 checksum:a6a8d542ce
+d3 2
+a4 2
+! Last modified: Tue, 14 Apr 2026 15:01:27 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-annoyances
+d2711 3
+d2912 1
+a2912 1
+/wp-content/plugins/wccp-pro/*$domain=ferroviando.com.br|counciloflove.com|infokik.com|kulinarnastronamocy.pl|jafekri.com|reborntrans.com|truyenbanquyen.com|ezmanga.net|secondlifetranslations.com|piklodz.pl|koltry.life|kolnovel.com|theaircurrent.com
+diff name:ublock-badware lines:7 checksum:89c1ec1adf
+d3 2
+a4 2
+! Last modified: Tue, 14 Apr 2026 15:00:38 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-badware
+a520 2
+/dc?pl=*&click_id=$doc
+||dcrtb-pixel.com^$doc
+diff name:ublock-experimental lines:3 checksum:836c673497
+d4 1
+a4 1
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-experimental
+diff name:ublock-filters lines:41 checksum:d294de20b9
+d3 2
+a4 2
+! Last modified: Tue, 14 Apr 2026 15:01:27 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-filters
+d6171 4
+d7879 1
+a7879 4
+*$script,redirect-rule=noop.js,domain=torupload.com|nathanmichaelphoto.com
+*$xhr,redirect-rule=nooptext,domain=torupload.com|nathanmichaelphoto.com
+*$frame,redirect-rule=noop.html,domain=torupload.com|nathanmichaelphoto.com
+*$object,redirect-rule=noopframe,domain=torupload.com|nathanmichaelphoto.com
+d7881 11
+a7891 19
+*$object,domain=torupload.com|nathanmichaelphoto.com
+torupload.com,nathanmichaelphoto.com##+js(nowoif, , 10, obj)
+@@||googleads.g.doubleclick.net/pagead/ads$subdocument,domain=nathanmichaelphoto.com
+@@||pagead2.googlesyndication.com^$script,domain=nathanmichaelphoto.com
+@@||cdn4ads.com^$script,domain=nathanmichaelphoto.com
+@@||adsco.re^$script,domain=nathanmichaelphoto.com
+@@||dash.ezmob.com/ss/js/ads.js$script,domain=nathanmichaelphoto.com
+torupload.com##+js(nano-sib, /seconds--|timeLeft--/, *)
+torupload.com##+js(trusted-replace-argument, document.addEventListener, 0, json:"click", condition, visibilitychange)
+torupload.com##+js(set, document.hidden, true)
+torupload.com,nathanmichaelphoto.com##+js(rpnt, script, false, true, condition, opened)
+torupload.com,nathanmichaelphoto.com##+js(set, HTMLScriptElement.prototype.onerror, undefined)
+torupload.com,nathanmichaelphoto.com##+js(set, window._pao, {})
+torupload.com,nathanmichaelphoto.com##+js(set, window._pop, [])
+torupload.com,nathanmichaelphoto.com##+js(set, isAdblockActive, false)
+torupload.com,nathanmichaelphoto.com##+js(trusted-replace-argument, document.querySelector, 0, json:"main", condition, /div-gpt-ad-dgking|\.GoogleActiveViewElement/)
+torupload.com,nathanmichaelphoto.com##+js(trusted-replace-argument, document.querySelectorAll, 0, json:"main", condition, /div-gpt-ad-|\.adsbygoogle/)
+torupload.com,nathanmichaelphoto.com##+js(trusted-replace-argument, document.getElementById, 0, json:"container", condition, adblock_detected)
+torupload.com,nathanmichaelphoto.com##+js(prevent-fetch, /pub\.clickadu|bing\.com)
+d9457 1
+a9457 1
+sabishiidesu.com,saekita.com,samovies.net,samrudhiglobal.com,samurai.rzword.xyz,samurai.wordoco.com,sanmiguellive.com,santhoshrcf.com,sararun.net,sarkariresult.social,satcesc.com,satoshifaucet.io,savegame.pro,sawwiz.com,scansatlanticos.com,schadeck.eu,sezia.com,schildempire.com,scholarshiplist.org,sciencebe21.in,scontianastro.com,scrap-blog.com,scripcheck.great-site.net,scriptsomg.com,searchmovie.wp.xdomain.jp,searchnsucceed.in,seasons-dlove.net,seirsanduk.com,seogroup.bookmarking.info,seoworld.in,seriu.jp,setsuyakutoushi.com,serieshdpormega.com,server-tutorials.net,serverbd247.com,sezia.com,shadagetech.com,shanurdu.com,sharphindi.in,sheikhmovies.*,shipseducation.com,shimauma-log.com,shittokuadult.net,shlly.com,shogaisha-shuro.com,shogaisha-techo.com,shopkensaku.com,shorttrick.in,showflix.*,showrovblog.com,shrinklinker.com,shrinkus.tk,shrivardhantech.in,sieradmu.com,siimanga.cyou,siirtolayhaber.com,sim-kichi.monster,sivackidrum.net,sk8therapy.fr,skardu.pk,skidrowreloaded.com,slawoslaw.pl,slowianietworza.pl,smallseotools.ai,smartinhome.pl,snowman-information.com,socebd.com,sociallyindian.com,softcobra.com,softrop.com,sohohindi.com,sosuroda.pl,sourds.net,south-park-tv.biz,soziologie-politik.de,sp500-up.com,space-faucet.com,spacestation-online.com,spardhanews.com,speculationis.com,spinoff.link,spiritparting.com,sport-97.com,sportsblend.net,ssdownloader.online,stablediffusionxl.com,stadelahly.net,stahnivideo.cz,starsgtech.in,start-to-run.be,startupjobsportal.com,stbemuiptvn.com,ster-blog.xyz,stimotion.pl,stireazilei.eu,stock-rom.com,streamseeds24.com,strefa.biz,studybullet.com,sufanblog.com,sukuyou.com,sullacollina.it,sumirekeiba.com,sundberg.ws,suneelkevat.com,super-ethanol.com,superpackpormega.com,surgicaltechie.com,suvvehicle.com,swietaslowianskie.pl,sylverkat.com,symboleslowianskie.pl,sysguides.com,swordalada.org,system32.ink,sztucznainteligencjablog.pl##+js(noeval-if, /chp_?ad/)
+d14221 2
+d16795 4
+d24610 1
+a24610 2
+worder.cat##+js(set, ab.dt, false)
+@@||worder.cat/$script,1p
+diff name:ublock-privacy lines:3 checksum:93582c0d94
+d4 1
+a4 1
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-privacy
+diff name:ublock-quick-fixes lines:10 checksum:57aec62d57
+d3 2
+a4 2
+! Last modified: Tue, 14 Apr 2026 14:25:01 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-quick-fixes
+d148 1
+a148 4
+japscan.*##+js(acs, Promise.resolve, /jso\$|\(_0x|(['"`]\s*[-0-9A-Z_a-z]+\s*['"`]\,\s*){50\,}/)
+japscan.*##+js(trusted-set, aclib, 'json:{"isShowingPop":false}')
+japscan.*##+js(set, aclib.runInterstitial, {}, as, function)
+japscan.*##+js(trusted-replace-outbound-text, Function.prototype.toString, ( ) => value, 'runInterstitial(e){if(this.#fe.interstitial)return void this.#r.error("interstitial zone already loaded on page");this.#fe.interstitial=!0;const{zoneId:t,sub1:r,isAutoTag:n,collectiveZoneId:i,linkedZoneId:o,aggressivity:s,recordPageView:a,abTest:c,tagVersionSuffix:u}=e;if(!t)throw new Error("mandatory zoneId is not provided!");if(!we(t))throw new Error("zoneId is not a string!");this.#r.debug("loading interstitial on page");const l={zoneId:t,sub1:r,isAutoTag:n,collectiveZoneId:i,linkedZoneId:o,aggressivity:s,recordPageView:a,abTest:c,tagVersionSuffix:u,adcashGlobalName:this.#xe,adserverDomain:this.#v,adblockSettings:this.#s,uniqueFingerprint:this.#C,isLoadedAsPartOfLibrary:!1};if(this.#pe.add(t),this.#Ce.Interstitial)return l.isLoadedAsPartOfLibrary=!0,void new this.#Ce.Interstitial(l);if(window.Interstitial)new Interstitial(l);else{const e=document.createElement("script");e.type="text/javascript",e.src=`${location.protocol}//${this.#he}/script/interstitial.js`,e.setAttribute("a-lib","1"),e.onload=()=>{new Interstitial(l)},e.onerror=()=>{this.#r.error(`failed loading ${e.src}`)},document.head.appendChild(e)}}')
+diff name:ublock-unbreak lines:3 checksum:d426a48c6f
+d4 1
+a4 1
+! Diff-Path: ../patches/2026.4.14.921.patch#ublock-unbreak
+diff name:easylist lines:165 checksum:55d4503713
+d4 2
+a5 2
+! Last modified: Tue, 14 Apr 2026 14:22:18 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#easylist
+a16028 1
+||4ix7rnw1bwzcm8nv5q33nr7rm.rest^
+a16380 1
+||8eynukgb9h2txj4nfp3jkm7vtg8mgxy.cfd^
+a17781 1
+||ajugalknxcrmr.com^
+a18603 1
+||arwriptatfwe.in^
+a18895 1
+||aukgiecbioahe.website^
+a20022 1
+||bineurus.cyou^
+a20311 1
+||bmlkrquimbyck.website^
+a20466 1
+||booleyopacous.cyou^
+a21302 1
+||calaspluggerquaker.cyou^
+a21379 1
+||cank9.site^
+a21539 1
+||cavallahoggs.shop^
+a22584 1
+||colletsbummock.cfd^
+a23735 1
+||d1owuvqs9tkert.cloudfront.net^
+a23783 1
+||dagrtenihca.in^
+a24079 1
+||deburseglor.qpon^
+a24518 1
+||diducedjambool.qpon^
+a25119 1
+||dpiixydxabnkh.site^
+a25360 1
+||dubietybialy.com^
+a25449 1
+||dvkqeriwa.com^
+a25836 1
+||edxbbmcxp.com^
+a26378 1
+||enologychaosteen.qpon^
+a27414 1
+||fddhqgdshulwp.space^
+a28277 1
+||fqetpiuph7og41.cfd^
+a29479 1
+||gnbulgoxer.com^
+a29568 1
+||goldangrefect.qpon^
+a29738 1
+||graftedmagicsbryozoa.cyou^
+a29873 1
+||gripedeuton.cyou^
+a29893 1
+||grooverhurdis.shop^
+a30865 1
+||hhihpgdsvtdiy.com^
+a30911 1
+||hideseducts.shop^
+a32070 1
+||hxynnesorrbhp.site^
+a33211 1
+||infinitybet.win^
+a34050 1
+||iwsyrrmmaijzq.space^
+a34478 1
+||jdnwwjlagornb.online^
+a35248 1
+||jrkhayqursqgt.space^
+a39548 1
+||lzkjricxrvrtx.website^
+a39769 1
+||malaybchs.qpon^
+a42030 1
+||mvhyrqnedfm.com^
+a42116 1
+||mxppmksjqezap.online^
+a42670 1
+||needntmoggan.qpon^
+a43098 1
+||nioljyrbuctyl.space^
+a43738 1
+||nrynlpardmwnm.space^
+a43787 1
+||ntfhgbirvp.com^
+a43858 1
+||nufnkmqevvqla.space^
+a44475 1
+||odewcqwls.com^
+a45949 1
+||ovalpool.pro^
+a46701 1
+||pattervigourblend.com^
+a47032 1
+||penitentagilemenace.com^
+a47918 1
+||pllraqtbaonaa7uia9ddcveggfooia1xyz.com^
+a49155 1
+||pshmvdobslfrg.website^
+a49889 1
+||qahzdrhruieun.website^
+a49981 1
+||qcoirrkdtkwck.site^
+a50437 1
+||qoewovfmkn4rw3u.rest^
+a50901 1
+||qvwegpvuvdanx.website^
+a51664 1
+||recueilgarau.shop^
+a53276 1
+||rskcwqsud.com^
+a53301 1
+||rsxokbqxbelnq.online^
+a53987 1
+||sangmoonlightstake.com^
+a54336 1
+||scousesinapicidesia.cfd^
+a55823 1
+||slpiqbmvyvaih.online^
+a56184 1
+||soleratantawyquiina.cfd^
+a58315 1
+||tarsiusowser.com^
+a59169 1
+||tikeanswersaureous.cyou^
+a59938 1
+||traffly.net^
+a62254 1
+||urtirepor.com^
+a62936 1
+||vdeukmyunderthfe.org^
+a63768 1
+||vocumosifxmnk.com^
+a64562 1
+||waughtsschillu.cfd^
+a65763 1
+||wooersbyously.cyou^
+a66782 1
+||xjroxexpxzdno.site^
+a67242 1
+||xurywsqptqwdm.website^
+a67407 1
+||xyxvyzhijqwyp.site^
+a67991 1
+||ylukdqywj.com^
+a68122 1
+||yoqiswcewkzmt.online^
+a68219 1
+||yqfyjlkgoulwl.space^
+a68427 1
+||yvvtpgdnlxjhs.site^
+a68816 1
+||zephyrdumbing.cyou^
+a69297 1
+||zpvsaaeeuyftm.website^
+a69329 1
+||zquhhnkxnkoeoa.com^
+d90238 1
+a90238 1
+@@||imasdk.googleapis.com/js/core/bridge*.html$subdocument,domain=~airtelxstream.in|~danet.vn|~einthusan.tv|~spotify.com
+diff name:easyprivacy lines:9 checksum:bda6f3c30a
+d4 2
+a5 2
+! Last modified: Tue, 14 Apr 2026 14:22:18 +0000
+! Diff-Path: ../patches/2026.4.14.921.patch#easyprivacy
+a6004 1
+||statlytic.net^$third-party
+d7575 1
+a10837 1
+||datadome00.id.me/tags.js
+ø‚úÝ      iÞg³iÞg³Iaô¦iÞg³   B    ~FETCH,:https://ublockorigin.pages.dev/patches/2026.4.14.584.patch strongly-framed 1 security-info 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 request-method GET response-head HTTP/3 200 
+date: Tue, 14 Apr 2026 16:13:41 GMT
+content-type: application/octet-stream
+content-length: 9865
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+etag: "d1b95480347728720f9a4c6542c87fb7"
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=NjwrMdKmEirhkH9jjoHgMTGgzT%2BegV0Z%2FuYBJmB0wDvrUgDrOSW%2Bzn7a2tXt20pGVyGfPKyCYBFV7o9p%2FG%2BBswva%2Fu7q%2Bq6VRKArqlI1l25N78SQMazm4P4kihVRBTCdp2rXRzfW2lc5HsBascF%2BRxsYKMvL"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority: u=4,i=?0
+server: cloudflare
+cf-ray: 9ec3ffd00a1691f8-GIG
+alt-svc: h3=":443"; ma=86400
+server-timing: cfExtPri
+X-Firefox-Http3: h3
+ original-response-headers date: Tue, 14 Apr 2026 16:13:41 GMT
+content-type: application/octet-stream
+content-length: 9865
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+etag: "d1b95480347728720f9a4c6542c87fb7"
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=NjwrMdKmEirhkH9jjoHgMTGgzT%2BegV0Z%2FuYBJmB0wDvrUgDrOSW%2Bzn7a2tXt20pGVyGfPKyCYBFV7o9p%2FG%2BBswva%2Fu7q%2Bq6VRKArqlI1l25N78SQMazm4P4kihVRBTCdp2rXRzfW2lc5HsBascF%2BRxsYKMvL"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority: u=4,i=?0
+server: cloudflare
+cf-ray: 9ec3ffd00a1691f8-GIG
+alt-svc: h3=":443"; ma=86400
+server-timing: cfExtPri
+ ctid 1 net-response-time-onstart 231 net-response-time-onstop 258   &‰
