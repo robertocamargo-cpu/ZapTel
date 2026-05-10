@@ -1,130 +1,144 @@
 import pandas as pd
 import json
 import os
+from datetime import datetime
 
 # === CONFIGURAÇÃO DE CAMINHOS ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # === TELEFONIA ===
-# Tenta carregar o relatório baixado pela automação, caso contrário usa o anterior
-file_tel = os.path.join(BASE_DIR, 'Tenant_CallRecordReport.xlsx')
-if not os.path.exists(file_tel):
-    # Procura por qualquer arquivo que comece com Tenant_CallRecordReport e pegue o primeiro
-    search_dir = BASE_DIR
-    found = [f for f in os.listdir(search_dir) if f.startswith('Tenant_CallRecordReport')]
-    if found:
-        file_tel = os.path.join(search_dir, found[0])
+path_new = os.path.join(BASE_DIR, 'Tenant_CallRecordReport.xlsx')
+path_hist = os.path.join(BASE_DIR, 'atendimento tel.xlsx')
+
+df_new = pd.read_excel(path_new) if os.path.exists(path_new) else pd.DataFrame()
+
+if os.path.exists(path_hist):
+    try:
+        path_backup = path_hist.replace('.xlsx', '_backup.xlsx')
+        import shutil
+        shutil.copy2(path_hist, path_backup)
+        df_hist = pd.read_excel(path_hist)
+        print(f"Lendo histórico: {path_hist} ({len(df_hist)} registros)")
+    except Exception as e:
+        print(f"Erro ao ler histórico: {e}. Iniciando novo.")
+        df_hist = pd.DataFrame()
+else:
+    df_hist = pd.DataFrame()
+
+# Concatena e remove duplicatas baseadas no ID Chamada
+if not df_new.empty:
+    print(f"Lendo novo relatório: {path_new} ({len(df_new)} registros)")
+    if not df_hist.empty:
+        df_tel = pd.concat([df_hist, df_new], ignore_index=True)
+        df_tel = df_tel.drop_duplicates(subset=['ID Chamada'], keep='last')
     else:
-        file_tel = os.path.join(BASE_DIR, 'atendimento tel.xlsx')
+        df_tel = df_new
+else:
+    df_tel = df_hist
 
-df_tel = pd.read_excel(file_tel)
+# Salva o histórico acumulado (Backup físico) - MANTÉM TUDO PARA O RELATÓRIO
+if not df_tel.empty:
+    df_tel.to_excel(path_hist, index=False)
+    print(f"Histórico atualizado e salvo: {len(df_tel)} registros totais.")
 
-ramal_nome = {
-    1000: 'Roberto', 1001: 'Ana Helena', 1002: 'Paulo', 1003: 'Arnaldo Acerbi',
-    1004: 'Alessandra', 1005: 'Juliana', 1006: 'Angelita Francisco', 1007: 'Fernando',
-    1008: 'Aurora', 1010: 'Vinicius', 1012: 'Poliane',
+# Normalização de nomes
+NAME_MAP = {
+    'Arnaldo': 'Arnaldo Acerbi', 'Arnaldo César': 'Arnaldo Acerbi', 'Arnaldo Acerbi': 'Arnaldo Acerbi',
+    'Aurora': 'Aurora Dutra', 'Aurora Dutra': 'Aurora Dutra',
+    'Juliana': 'Juliana Sanches', 'Juliana Sanches': 'Juliana Sanches',
+    'Paulo': 'Paulo Vinicius', 'Paulo Vinicius': 'Paulo Vinicius',
+    'Poliane': 'Poliane Medeiros', 'Poliane Medeiros': 'Poliane Medeiros',
+    'Angelita': 'Angelita Francisco', 'Angelita Francisco': 'Angelita Francisco',
+    'Roberto': 'Roberto Camargo', 'Roberto Camargo': 'Roberto Camargo'
 }
 
-outbound = df_tel[(df_tel['Direção Chamada'] == 'OUTBOUND') & (df_tel['Minuto da chamada'] > 0.30)].copy()
-outbound['nome'] = outbound['Origem'].map(ramal_nome).fillna('Desconhecido')
-outbound['ramal'] = outbound['Origem'].astype(int)
-outbound['data'] = pd.to_datetime(outbound['Tempo Início']).dt.strftime('%Y-%m-%d')
-outbound['tempo_seg'] = (outbound['Minuto da chamada'] * 60).astype(int)
+def normalize_name(name):
+    if not name or pd.isna(name): return 'Sem atendente'
+    n = str(name).strip()
+    return NAME_MAP.get(n, n)
 
-tel_records = outbound[['nome', 'ramal', 'data', 'tempo_seg']].to_dict(orient='records')
+hoje_dt = datetime.now()
+# WhatsApp mantém 60 dias para cobrir o mês anterior
+limite_zap = (hoje_dt - pd.Timedelta(days=60)).strftime('%Y-%m-%d')
 
-# Descobrir range de datas
-tel_dates = pd.to_datetime(outbound['Tempo Início'])
-print(f"Telefonia: {tel_dates.min()} a {tel_dates.max()}")
+# Processamento Telefonia (SEM LIMITE DE 30 DIAS NO PROCESSAMENTO, USA TUDO QUE TEM)
+if not df_tel.empty:
+    # Conversão robusta de data para o formato brasileiro ou ISO
+    # O format='%Y-%m-%d %H:%M:%S' ou dayfirst=True ajudam conforme o que vem do portal
+    df_tel['data_dt'] = pd.to_datetime(df_tel['Tempo Início'], errors='coerce')
+    
+    outbound = df_tel[(df_tel['Direção Chamada'] == 'OUTBOUND') & (df_tel['Minuto da chamada'] > 0.30)].copy()
+    outbound['nome_raw'] = outbound['Chamador'].str.replace(r' \d+', '', regex=True)
+    outbound['nome'] = outbound['nome_raw'].apply(normalize_name)
+    outbound['ramal'] = outbound['Chamador'].str.extract(r'(\d+)')
+    outbound['data'] = outbound['data_dt'].dt.strftime('%Y-%m-%d')
+    outbound['tempo_seg'] = (outbound['Minuto da chamada'] * 60).astype(int)
+    
+    # Remove registros onde a data falhou na conversão
+    outbound = outbound.dropna(subset=['data'])
+    
+    tel_records = outbound[['nome', 'ramal', 'data', 'tempo_seg']].to_dict(orient='records')
+    print(f"Telefonia Dashboard (Histórico Total): {len(tel_records)} registros.")
+else:
+    tel_records = []
 
 # === WHATSAPP ===
 path_zap = os.path.join(BASE_DIR, 'atendimento zap.xlsx')
+zap_records = []
 if os.path.exists(path_zap):
-    # Usando engine openpyxl para maior compatibilidade se necessário
     df_zap = pd.read_excel(path_zap)
-    
-    # Identifica a coluna de data (DATA no formato padrão do SMBOT)
-    # Tenta 'DATA', depois 'DATACRIACAO', depois 'DATACRIACAO'
     col_data_zap = 'DATA'
     for c in ['DATA', 'DATACRIACAO', 'DATA CRIACAO']:
         if c in df_zap.columns:
             col_data_zap = c
             break
     
-    print(f"WhatsApp colunas: {list(df_zap.columns)}")
-    print(f"WhatsApp DATA ({col_data_zap}) sample: {df_zap[col_data_zap].head(2).tolist()}")
-    
-    # Otimiza a conversão de data usando dayfirst=True para formato brasileiro DD/MM/YYYY
     df_zap['data_dt'] = pd.to_datetime(df_zap[col_data_zap], dayfirst=True, errors='coerce')
     df_zap['data'] = df_zap['data_dt'].dt.strftime('%Y-%m-%d')
     
+    # Filtra 60 dias para WhatsApp
+    df_zap = df_zap[df_zap['data'] >= limite_zap].dropna(subset=['data'])
+    
     df_zap['ATENDENTE'] = df_zap['ATENDENTE'].fillna('Sem atendente')
+    df_zap['atendente'] = df_zap['ATENDENTE'].apply(normalize_name)
     df_zap['STATUS'] = df_zap['STATUS'].fillna('DESCONHECIDO')
     
-    # Remove linhas onde a data não pôde ser convertida
-    df_zap = df_zap.dropna(subset=['data'])
-    
-    zap_records = df_zap[['ATENDENTE', 'STATUS', 'data']].rename(
-        columns={'ATENDENTE': 'atendente', 'STATUS': 'status'}
+    zap_records = df_zap[['atendente', 'STATUS', 'data']].rename(
+        columns={'STATUS': 'status'}
     ).to_dict(orient='records')
-    
-    zap_dates = df_zap['data_dt']
-    print(f"WhatsApp: {zap_dates.min()} a {zap_dates.max()} ({len(zap_records)} registros)")
-else:
-    print("AVISO: Arquivo de WhatsApp não encontrado em:", path_zap)
-    zap_records = []
-    zap_dates = pd.Series([pd.Timestamp.now()]) # Fallback
+    print(f"WhatsApp Dashboard (60 dias): {len(zap_records)} registros.")
 
 # === MOSTRUÁRIO ===
 path_mostruario = os.path.join(BASE_DIR, 'mostruario.xlsx')
 mostruario_records = []
 if os.path.exists(path_mostruario):
-    print("Processando Mostruário...")
     excel_mostruario = pd.ExcelFile(path_mostruario)
-    
     mes_map = {
         'Janeiro': '01', 'Fevereiro': '02', 'Março': '03', 'Abril': '04',
         'Maio': '05', 'Junho': '06', 'Julho': '07', 'Agosto': '08',
         'Setembro': '09', 'Outubro': '10', 'Novembro': '11', 'Dezembro': '12'
     }
-    
-    # Ano fixo como 2026 conforme contexto do sistema
-    ANO = "2026"
-    
     for sheet in excel_mostruario.sheet_names:
         if sheet in mes_map:
-            # Lê a planilha, pulando a primeira linha (que parece ser informativa/vazia)
-            # e usando a segunda como cabeçalho
             df_mes = pd.read_excel(path_mostruario, sheet_name=sheet, skiprows=1)
-            
             if not df_mes.empty and 'Vendedor' in df_mes.columns:
-                # Remove linhas onde o vendedor é nulo
                 vendedores = df_mes['Vendedor'].dropna()
-                
-                mes_num = mes_map[sheet]
-                data_iso = f"{ANO}-{mes_num}-01" # Data base do mês
-                
+                data_iso = f"2026-{mes_map[sheet]}-01"
                 for v in vendedores:
-                    mostruario_records.append({
-                        'vendedor': str(v).strip(),
-                        'data': data_iso
-                    })
-    
+                    v_norm = normalize_name(v)
+                    mostruario_records.append({'vendedor': v_norm, 'data': data_iso})
     print(f"Mostruário: {len(mostruario_records)} registros processados.")
-else:
-    print("AVISO: Arquivo de Mostruário não encontrado.")
 
-# Pegar range geral
-# Consideramos também as datas do mostruário se existirem
-all_dates = []
-if not tel_dates.empty: all_dates.append(tel_dates.min()); all_dates.append(tel_dates.max())
-if not zap_dates.empty: all_dates.append(zap_dates.min()); all_dates.append(zap_dates.max())
-
-if all_dates:
-    all_min = min(all_dates).strftime('%Y-%m-%d')
-    all_max = max(all_dates).strftime('%Y-%m-%d')
+# Range para o Dashboard (Dia 1 do mês passado até hoje)
+if hoje_dt.month == 1:
+    mes_passado = 12
+    ano_passado = hoje_dt.year - 1
 else:
-    all_min = all_max = pd.Timestamp.now().strftime('%Y-%m-%d')
+    mes_passado = hoje_dt.month - 1
+    ano_passado = hoje_dt.year
+
+all_min = f"{ano_passado:04d}-{mes_passado:02d}-01"
+all_max = hoje_dt.strftime('%Y-%m-%d')
 
 result = {
     'telefonia': tel_records,
@@ -133,12 +147,8 @@ result = {
     'date_range': {'min': all_min, 'max': all_max}
 }
 
-# Define o caminho de saída para a pasta (mesmo diretório do script)
 output_path = os.path.join(BASE_DIR, 'full_data.json')
-
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False)
 
-print(f"\nfull_data.json gerado em: {output_path}")
-print(f"{len(tel_records)} registros telefonia, {len(zap_records)} registros whatsapp")
-print(f"Range: {all_min} a {all_max}")
+print(f"\nfull_data.json gerado. Range: {all_min} a {all_max}")

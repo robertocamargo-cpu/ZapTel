@@ -4,1052 +4,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resumo — Telefonia & WhatsApp</title>
+    <title>ZapTel Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f1117;
-            --surface: rgba(255, 255, 255, 0.04);
-            --surface-hover: rgba(255, 255, 255, 0.07);
+            --bg: #0b0d11;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.06);
             --border: rgba(255, 255, 255, 0.08);
-            --text: #e4e4e7;
+            --text: #f4f4f5;
             --text-dim: #a1a1aa;
+            --chumbo-1: rgba(255, 255, 255, 0.01);
+            --chumbo-2: rgba(255, 255, 255, 0.04);
             --accent-tel: #818cf8;
-            --accent-tel-glow: rgba(129, 140, 248, 0.15);
-            --accent-zap: #4ade80;
-            --accent-zap-glow: rgba(74, 222, 128, 0.15);
-            --accent-orange: #fb923c;
-            --accent-amber: #fbbf24;
-            --accent-rose: #f43f5e;
-            --accent-cyan: #22d3ee;
+            --accent-zap: #22c55e;
             --accent-purple: #a855f7;
-            --accent-purple-glow: rgba(168, 85, 247, 0.15);
-            --radius: 12px;
+            --accent-amber: #fbbf24;
+            --radius: 16px;
             --radius-sm: 8px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
-            min-height: 100vh;
-            padding: 32px 24px;
+            padding: 40px 24px;
+            line-height: 1.5;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(34, 197, 94, 0.08) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
+        .container { max-width: 1600px; margin: 0 auto; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Top Summary Flexbox */
-        .top-summary {
-            display: flex;
-            gap: 24px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
-        .summary-group {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .summary-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .summary-header .icon {
-            font-size: 18px;
-        }
-
-        .summary-cards {
-            display: flex;
-            gap: 16px;
-        }
-
-        .summary-cards .card {
-            flex: 1;
-            padding: 20px;
-        }
-
-        /* Header */
         .header {
-            text-align: center;
-            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
         }
 
-        .header h1 {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
-        }
+        .header-titles h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+        .header-titles .subtitle { color: var(--text-dim); font-size: 14px; }
 
-        .header .subtitle {
-            font-size: 13px;
-            color: var(--text-dim);
-        }
-
-        /* Date Filter */
         .date-filter {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 36px;
-            flex-wrap: wrap;
-        }
-
-        .date-filter label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .date-filter input[type="date"] {
+            gap: 16px;
             background: var(--surface);
+            padding: 8px 16px;
+            border-radius: 50px;
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            outline: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
         }
 
-        .date-filter input[type="date"]:focus {
-            border-color: var(--accent-tel);
-            box-shadow: 0 0 0 3px var(--accent-tel-glow);
-        }
+        .date-filter input { background: transparent; border: none; color: var(--text); font-weight: 600; outline: none; }
+        .filter-btn { background: var(--text); color: var(--bg); border: none; padding: 6px 20px; border-radius: 20px; font-weight: 700; cursor: pointer; }
 
-        .date-filter input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.7);
-            cursor: pointer;
-        }
+        .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+        .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+        .summary-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .summary-card.tel::before { background: var(--accent-tel); }
+        .summary-card.zap::before { background: var(--accent-zap); }
+        .summary-card.most::before { background: var(--accent-purple); }
 
-        .filter-btn {
-            background: linear-gradient(135deg, var(--accent-tel), #818cf8);
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 10px 24px;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .filter-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 20px var(--accent-tel-glow);
-        }
-
-        .filter-btn:active {
-            transform: translateY(0);
-        }
-
-        .date-separator {
-            font-size: 13px;
+        .summary-card h3 { 
+            font-size: 12px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 15px;
             color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        /* Section titles */
-        .section-title {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
+            gap: 8px;
         }
 
-        .section-title .icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
+        .breakout-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .breakout-item { text-align: center; padding: 15px 10px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.02); border: 1px solid transparent; }
+        .breakout-item.highlight { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.05); }
+        .breakout-val { font-size: 28px; font-weight: 800; display: block; line-height: 1; margin-bottom: 8px; }
+        .breakout-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; opacity: 0.7; }
 
-        .section-title.tel .icon {
-            background: var(--accent-tel-glow);
-            color: var(--accent-tel);
-        }
+        .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { padding: 12px 8px; text-transform: uppercase; font-size: 10px; font-weight: 800; border-bottom: 1px solid var(--border); cursor: pointer; }
+        th:hover { background: rgba(255,255,255,0.05); }
+        td { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); text-align: center; }
+        
+        .col-group-1 { background-color: var(--chumbo-1); }
+        .col-group-2 { background-color: var(--chumbo-2); }
 
-        .section-title.zap .icon {
-            background: var(--accent-zap-glow);
-            color: var(--accent-zap);
-        }
+        .name-cell { display: flex; align-items: center; gap: 12px; text-align: left; padding-left: 10px; }
+        .avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; }
+        .name-info .name { font-weight: 700; font-size: 14px; }
+        .name-info .sub { font-size: 11px; color: var(--text-dim); }
 
-        /* Cards */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+        .waiting-badge { background: var(--accent-amber); color: #000; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px 20px;
-            backdrop-filter: blur(12px);
-            transition: all 0.25s ease;
-        }
-
-        .card:hover {
-            background: var(--surface-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .card .card-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 8px;
-        }
-
-        .card .card-value {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-
-        .card .card-sub {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-top: 4px;
-        }
-
-        .card-value.tel {
-            color: var(--accent-tel);
-        }
-
-        .card-value.zap {
-            color: var(--accent-zap);
-        }
-
-        .card-value.orange {
-            color: var(--accent-orange);
-        }
-
-        .card-value.amber {
-            color: var(--accent-amber);
-        }
-
-        /* Table */
-        .table-wrapper {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            backdrop-filter: blur(12px);
-            margin-bottom: 48px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead tr:first-child th {
-            text-align: center;
-            font-size: 10px;
-            border-bottom: 2px solid var(--border);
-            padding: 4px 2px;
-        }
-
-        thead th {
-            padding: 4px 2px;
-        }
-
-        thead tr:last-child th {
-            font-size: 9px;
-            padding: 4px 2px;
-            color: var(--text-dim);
-        }
-
-        .th-tel { color: var(--accent-tel); border-bottom-color: var(--accent-tel) !important; }
-        .th-zap { color: var(--accent-zap); border-bottom-color: var(--accent-zap) !important; }
-        .th-most { color: var(--accent-purple); border-bottom-color: var(--accent-purple) !important; }
-
-        /* Sorting Styles */
-        th.sortable {
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.2s;
-            position: relative;
-        }
-
-        th.sortable:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .sort-icon {
-            font-size: 10px;
-            margin-left: 2px;
-            opacity: 0.3;
-            display: inline-block;
-            transition: all 0.2s;
-        }
-
-        th.active-sort .sort-icon {
-            opacity: 1;
-            color: inherit;
-        }
-
-        th.active-sort {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        tbody td {
-            padding: 6px 4px;
-            font-size: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            vertical-align: middle;
-        }
-
-        tbody tr {
-            transition: background 0.2s ease;
-        }
-
-        tbody tr:hover {
-            background: var(--surface-hover);
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .name-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-            color: #fff;
-            flex-shrink: 0;
-        }
-
-        .name-info .name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .name-info .ramal {
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .badge-atd {
-            background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
-        }
-
-        .badge-fin {
-            background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
-        }
-
-        .badge-ativo {
-            background: rgba(34, 197, 94, 0.15);
-            color: #4ade80;
-        }
-
-        .badge-aguard {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-        }
-
-        .tempo-cell {
-            font-variant-numeric: tabular-nums;
-            font-weight: 500;
-            color: var(--text-dim);
-        }
-
-        .bar-container {
-            width: 100%;
-            max-width: 140px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            border-radius: 3px;
-            background: linear-gradient(90deg, var(--accent-tel), #818cf8);
-            transition: width 0.6s ease;
-        }
-
-        .bar-fill.green {
-            background: linear-gradient(90deg, var(--accent-zap), #4ade80);
-        }
-
-        .totals-row td {
-            font-weight: 700;
-            background: rgba(99, 102, 241, 0.05);
-            border-top: 1px solid var(--border);
-            border-bottom: none !important;
-        }
-
-        .totals-row.zap td {
-            background: rgba(34, 197, 94, 0.05);
-        }
-
-        .zap-cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        @media (max-width: 700px) {
-            .zap-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .cards-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .date-filter {
-                flex-direction: column;
-                gap: 8px;
-            }
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .pulse-dot.green {
-            background: var(--accent-zap);
-        }
-
-        .pulse-dot.amber {
-            background: var(--accent-amber);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-in {
-            animation: fadeInUp 0.5s ease forwards;
-            opacity: 0;
-        }
-
-        .footer {
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 12px;
-            padding: 20px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-dim);
-            font-size: 14px;
-        }
-
-        .loading::after {
-            content: '';
-            display: block;
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent-tel);
-            border-radius: 50%;
-            margin: 16px auto 0;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        .totals-row td { background: rgba(255,255,255,0.05) !important; font-weight: 800; border-top: 2px solid var(--border); }
+        .footer { margin-top: 40px; text-align: center; color: var(--text-dim); font-size: 12px; }
+        
+        .sort-icon { margin-left: 4px; opacity: 0.3; }
+        th.active .sort-icon { opacity: 1; }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header animate-in" style="animation-delay: 0.05s">
-            <h1>📊 Resumo de Atendimentos</h1>
-            <div class="subtitle">Telefonia (Outbound &gt; 0.30min) &amp; WhatsApp</div>
+        <div class="header">
+            <div class="header-titles">
+                <h1>📊 ZapTel Dashboard</h1>
+                <div class="subtitle">Controle de Performance — Telefonia, WhatsApp & Mostruários</div>
+            </div>
+            <div class="date-filter">
+                <input type="date" id="dateFrom">
+                <span style="color: var(--text-dim)">até</span>
+                <input type="date" id="dateTo">
+                <button class="filter-btn" onclick="applyFilter()">Filtrar</button>
+            </div>
         </div>
 
-        <!-- Date Filter -->
-        <div class="date-filter animate-in" style="animation-delay: 0.1s">
-            <label for="dateFrom">De</label>
-            <input type="date" id="dateFrom">
-            <span class="date-separator">—</span>
-            <label for="dateTo">Até</label>
-            <input type="date" id="dateTo">
-            <button class="filter-btn" id="filterBtn" onclick="applyFilter()">Filtrar</button>
+        <div id="summary-container" class="summary-row"></div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr style="height: 40px;">
+                        <th rowspan="2" style="text-align: left; padding-left: 20px;" onclick="toggleSort('name')">Operador / Ramal <span class="sort-icon">↕</span></th>
+                        <th colspan="3" class="col-group-1" style="color: var(--accent-tel)">📞 Telefonia</th>
+                        <th colspan="3" class="col-group-2" style="color: var(--accent-tel)">⏳ Tempo Total</th>
+                        <th colspan="3" class="col-group-1" style="color: var(--accent-zap)">💬 Conversas</th>
+                        <th colspan="3" class="col-group-2" style="color: var(--accent-zap)">✅ Finalizados</th>
+                        <th colspan="2" class="col-group-1" style="color: var(--accent-amber)">🔄 Status</th>
+                        <th colspan="3" class="col-group-2" style="color: var(--accent-purple)">📦 Mostruários</th>
+                    </tr>
+                    <tr id="dynamic-headers" style="font-size: 9px; color: var(--text-dim);">
+                        <!-- Preenchido pelo JS -->
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
         </div>
 
-        <!-- Content -->
-        <div id="dashboard-content">
-            <div class="loading">Carregando dados...</div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer animate-in" style="animation-delay: 0.4s">
-            Dados atualizados em <span id="lastUpdate">--/--/----</span> · Telefonia: somente outbound > 0.30min
+        <div class="footer">
+            Atualizado em <span id="last-update">--/--/---- --:--</span> · Telefonia Outbound > 30s
         </div>
     </div>
 
     <script>
         let RAW_DATA = null;
-        let CURRENT_SORT = { key: 'total_score', dir: 'desc' };
-
-        function toggleSort(key) {
-            if (CURRENT_SORT.key === key) {
-                CURRENT_SORT.dir = CURRENT_SORT.dir === 'desc' ? 'asc' : 'desc';
-            } else {
-                CURRENT_SORT.key = key;
-                CURRENT_SORT.dir = 'desc';
-            }
-            applyFilter(); // Reaplica o filtro e re-renderiza com a nova ordenação
-        }
-
-        function getSortIcon(key) {
-            if (CURRENT_SORT.key !== key) return '<span class="sort-icon">↕</span>';
-            return CURRENT_SORT.dir === 'desc' ? '<span class="sort-icon">↓</span>' : '<span class="sort-icon">↑</span>';
-        }
-
-        const AVATAR_COLORS = {
-            'Arnaldo Acerbi': ['#6366f1', '#818cf8'],
-            'Aurora Dutra': ['#8b5cf6', '#a78bfa'],
-            'Ana Helena': ['#ec4899', '#f472b6'],
-            'Juliana Sanches': ['#f97316', '#fb923c'],
-            'Fernando': ['#06b6d4', '#22d3ee'],
-            'Paulo Vinicius': ['#14b8a6', '#2dd4bf'],
-            'Angelita Francisco': ['#f43f5e', '#fb7185'],
-            'Alessandra': ['#a855f7', '#c084fc'],
-            'Roberto': ['#0ea5e9', '#38bdf8'],
-            'Vinicius': ['#84cc16', '#a3e635'],
-            'Poliane Medeiros': ['#e879f9', '#f0abfc'],
-            'Sem atendente': ['#64748b', '#94a3b8'],
-        };
+        let CURRENT_SORT = { key: 'score', dir: 'desc' };
 
         const NAME_JOINER = {
-            'Arnaldo': 'Arnaldo Acerbi',
-            'Arnaldo César': 'Arnaldo Acerbi',
-            'Aurora': 'Aurora Dutra',
-            'Juliana': 'Juliana Sanches',
-            'Paulo': 'Paulo Vinicius',
-            'Poliane': 'Poliane Medeiros',
-            'Angelita': 'Angelita Francisco',
-            // Ana Helena, Fernando, Alessandra etc. já batem ou não precisam de alias
+            'Arnaldo': 'Arnaldo Acerbi', 'Arnaldo César': 'Arnaldo Acerbi', 'Arnaldo Acerbi': 'Arnaldo Acerbi',
+            'Aurora': 'Aurora Dutra', 'Aurora Dutra': 'Aurora Dutra',
+            'Juliana': 'Juliana Sanches', 'Juliana Sanches': 'Juliana Sanches',
+            'Paulo': 'Paulo Vinicius', 'Paulo Vinicius': 'Paulo Vinicius',
+            'Poliane': 'Poliane Medeiros', 'Poliane Medeiros': 'Poliane Medeiros',
+            'Angelita': 'Angelita Francisco', 'Angelita Francisco': 'Angelita Francisco',
+            'Roberto': 'Roberto Camargo', 'Roberto Camargo': 'Roberto Camargo'
         };
 
-        function normalizeName(name) {
-            return NAME_JOINER[name] || name;
+        const AVATAR_COLORS = {
+            'Arnaldo Acerbi': ['#6366f1', '#818cf8'], 'Aurora Dutra': ['#8b5cf6', '#a78bfa'],
+            'Ana Helena': ['#ec4899', '#f472b6'], 'Juliana Sanches': ['#f97316', '#fb923c'],
+            'Fernando': ['#06b6d4', '#22d3ee'], 'Paulo Vinicius': ['#14b8a6', '#2dd4bf'],
+            'Angelita Francisco': ['#f43f5e', '#fb7185'], 'Alessandra': ['#a855f7', '#c084fc'],
+            'Roberto Camargo': ['#0ea5e9', '#38bdf8'], 'Vinicius': ['#84cc16', '#a3e635'],
+            'Poliane Medeiros': ['#e879f9', '#f0abfc'], 'Sem atendente': ['#64748b', '#94a3b8']
+        };
+
+        function formatYMD(date) {
+            return date.toISOString().split('T')[0];
         }
 
-        function getFullOperatorInfo(name, ramal) {
-            const mappedName = normalizeName(name);
-            let sub = ramal ? `Ramal ${ramal}` : 'WhatsApp';
-            if (name === 'Sem atendente') sub = 'WhatsApp';
-            return { fullName: mappedName, subtitle: sub };
+        function toggleSort(key) {
+            if (CURRENT_SORT.key === key) CURRENT_SORT.dir = CURRENT_SORT.dir === 'desc' ? 'asc' : 'desc';
+            else { CURRENT_SORT.key = key; CURRENT_SORT.dir = 'desc'; }
+            applyFilter();
         }
 
-        function getInitials(name) {
-            const parts = name.split(' ');
-            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-            return name.substring(0, 2).toUpperCase();
-        }
+        function render(data) {
+            const now = new Date();
+            const yesterdayDate = new Date(now);
+            yesterdayDate.setDate(now.getDate() - 1);
+            const yesterday = formatYMD(yesterdayDate);
+            
+            const thisMonth = yesterday.substring(0, 7);
+            const prevMonthDate = new Date(yesterdayDate);
+            prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+            const prevMonth = formatYMD(prevMonthDate).substring(0, 7);
 
-        function formatTempo(totalSeg) {
-            if (!totalSeg) return '0m 0s';
-            const h = Math.floor(totalSeg / 3600);
-            const m = Math.floor((totalSeg % 3600) / 60);
-            const s = totalSeg % 60;
-            if (h > 0) return `${h}h ${m}m ${s}s`;
-            return `${m}m ${s}s`;
-        }
-
-        function avatarHtml(name, colorMap) {
-            const colors = colorMap[name] || ['#64748b', '#94a3b8'];
-            return `<div class="avatar" style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]})">${getInitials(name)}</div>`;
-        }
-
-        function renderDashboard(telData, zapData) {
-            const container = document.getElementById('dashboard-content');
-
-            function formatYMD(date) {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const d = String(date.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            }
-
-            const today = new Date();
-            const todayStr = formatYMD(today);
-            const currentMonthStr = todayStr.substring(0, 7);
-            const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const prevMonthStr = formatYMD(prevMonthDate).substring(0, 7);
-
-            const operators = {};
-
-            const getOp = (name, ramal) => {
-                const info = getFullOperatorInfo(name, ramal);
-                if (!operators[info.fullName]) {
-                    operators[info.fullName] = {
-                        name: info.fullName,
-                        subtitle: info.subtitle,
-                        tel_atend: { hoje: 0, mes: 0, mes_passado: 0 },
-                        tel_tempo: { hoje: 0, mes: 0, mes_passado: 0 },
-                        zap_total: { hoje: 0, mes: 0, mes_passado: 0 },
-                        zap_fin: { hoje: 0, mes: 0, mes_passado: 0 },
-                        zap_ativo: 0,
-                        zap_aguard: 0,
-                        mostruario: { hoje: 0, mes: 0, mes_passado: 0 },
-                        total_tel_atend: 0,
-                        total_tel_tempo: 0,
-                        total_zap_total: 0,
-                        total_zap_fin: 0,
-                        total_zap_ativo: 0,
-                        total_zap_aguard: 0,
-                        total_mostruario: 0
-                    };
-                }
-                return operators[info.fullName];
+            // Cabeçalhos Dinâmicos
+            const labels = {
+                ontem: yesterday.split('-').reverse().join('/').substring(0,5),
+                mes: thisMonth.split('-').reverse().join('/'),
+                pass: prevMonth.split('-').reverse().join('/')
             };
 
-            function addMetric(opObj, metricPrefix, dateStr, amount = 1) {
-                opObj['total_' + metricPrefix] += amount;
-                if (!dateStr) return;
-                if (dateStr === todayStr) {
-                    opObj[metricPrefix].hoje += amount;
-                    opObj[metricPrefix].mes += amount;
-                } else if (dateStr.startsWith(currentMonthStr)) {
-                    opObj[metricPrefix].mes += amount;
-                } else if (dateStr.startsWith(prevMonthStr)) {
-                    opObj[metricPrefix].mes_passado += amount;
-                }
-            }
+            const headerHtml = `
+                <th class="col-group-1" onclick="toggleSort('tel_ontem')">${labels.ontem} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('tel_mes')">${labels.mes} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('tel_pass')">${labels.pass} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('tempo_ontem')">${labels.ontem} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('tempo_mes')">${labels.mes} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('tempo_pass')">${labels.pass} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('zap_ontem')">${labels.ontem} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('zap_mes')">${labels.mes} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('zap_pass')">${labels.pass} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('fin_ontem')">${labels.ontem} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('fin_mes')">${labels.mes} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('fin_pass')">${labels.pass} <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('abertos')">Abertos <span class="sort-icon">↕</span></th>
+                <th class="col-group-1" onclick="toggleSort('aguard')">Aguard. <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('most_ontem')">${labels.ontem} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('most_mes')">${labels.mes} <span class="sort-icon">↕</span></th>
+                <th class="col-group-2" onclick="toggleSort('most_pass')">${labels.pass} <span class="sort-icon">↕</span></th>
+            `;
+            document.getElementById('dynamic-headers').innerHTML = headerHtml;
 
-            // Process Telefonia
-            telData.forEach(r => {
+            const ops = {};
+            const totals = { 
+                tel: { ontem: 0, mes: 0, pass: 0 }, tempo: { ontem: 0, mes: 0, pass: 0 },
+                zap: { ontem: 0, mes: 0, pass: 0 }, fin: { ontem: 0, mes: 0, pass: 0 },
+                most: { ontem: 0, mes: 0, pass: 0 }, abertos: 0, aguard: 0
+            };
+
+            const getOp = (name, ramal) => {
+                const fullName = NAME_JOINER[name] || name;
+                if (!ops[fullName]) {
+                    ops[fullName] = {
+                        name: fullName, sub: ramal ? `Ramal ${ramal}` : 'WhatsApp',
+                        tel_ontem:0, tel_mes:0, tel_pass:0, tempo_ontem:0, tempo_mes:0, tempo_pass:0,
+                        zap_ontem:0, zap_mes:0, zap_pass:0, fin_ontem:0, fin_mes:0, fin_pass:0,
+                        most_ontem:0, most_mes:0, most_pass:0, abertos:0, aguard:0, score:0
+                    };
+                }
+                return ops[fullName];
+            };
+
+            data.telefonia.forEach(r => {
                 const op = getOp(r.nome, r.ramal);
-                addMetric(op, 'tel_atend', r.data, 1);
-                addMetric(op, 'tel_tempo', r.data, r.tempo_seg);
+                if (r.data === yesterday) { op.tel_ontem++; op.tel_mes++; op.tempo_ontem+=r.tempo_seg; op.tempo_mes+=r.tempo_seg; totals.tel.ontem++; totals.tel.mes++; totals.tempo.ontem+=r.tempo_seg; totals.tempo.mes+=r.tempo_seg; }
+                else if (r.data.startsWith(thisMonth)) { op.tel_mes++; op.tempo_mes+=r.tempo_seg; totals.tel.mes++; totals.tempo.mes+=r.tempo_seg; }
+                else if (r.data.startsWith(prevMonth)) { op.tel_pass++; op.tempo_pass+=r.tempo_seg; totals.tel.pass++; totals.tempo.pass+=r.tempo_seg; }
             });
 
-            // Process WhatsApp
-            zapData.forEach(r => {
+            data.whatsapp.forEach(r => {
                 const op = getOp(r.atendente || 'Sem atendente');
-                addMetric(op, 'zap_total', r.data, 1);
-                if (r.status === 'FINALIZADO') {
-                    addMetric(op, 'zap_fin', r.data, 1);
-                } else if (r.status === 'ATIVO') {
-                    op.zap_ativo++;
-                    op.total_zap_ativo++;
-                } else if (r.status === 'AGUARDANDO') {
-                    op.zap_aguard++;
-                    op.total_zap_aguard++;
-                }
+                if (r.data === yesterday) { op.zap_ontem++; op.zap_mes++; totals.zap.ontem++; totals.zap.mes++; if(r.status==='FINALIZADO') { op.fin_ontem++; op.fin_mes++; totals.fin.ontem++; totals.fin.mes++; } }
+                else if (r.data.startsWith(thisMonth)) { op.zap_mes++; totals.zap.mes++; if(r.status==='FINALIZADO') { op.fin_mes++; totals.fin.mes++; } }
+                else if (r.data.startsWith(prevMonth)) { op.zap_pass++; totals.zap.pass++; if(r.status==='FINALIZADO') { op.fin_pass++; totals.fin.pass++; } }
+                if (r.status === 'ATIVO') { op.abertos++; totals.abertos++; }
+                if (r.status === 'AGUARDANDO') { op.aguard++; totals.aguard++; }
             });
 
-            // Process Mostruário
-            if (RAW_DATA.mostruario) {
-                RAW_DATA.mostruario.forEach(r => {
-                    const from = document.getElementById('dateFrom').value;
-                    const to = document.getElementById('dateTo').value;
-                    if (from && r.data < from) return;
-                    if (to && r.data > to) return;
+            data.mostruario.forEach(r => {
+                const op = getOp(r.vendedor);
+                if (r.data === yesterday) { op.most_ontem++; op.most_mes++; totals.most.ontem++; totals.most.mes++; }
+                else if (r.data.startsWith(thisMonth)) { op.most_mes++; totals.most.mes++; }
+                else if (r.data.startsWith(prevMonth)) { op.most_pass++; totals.most.pass++; }
+            });
 
-                    const op = getOp(r.vendedor);
-                    addMetric(op, 'mostruario', r.data, 1);
-                });
-            }
+            Object.values(ops).forEach(op => op.score = op.tel_mes + op.zap_mes + op.most_mes);
 
-            // Custom sort logic
-            const rows = Object.values(operators);
-            rows.sort((a, b) => {
-                let valA, valB;
+            // Summary Render
+            document.getElementById('summary-container').innerHTML = `
+                <div class="summary-card tel">
+                    <h3>📞 Telefonia</h3>
+                    <div class="breakout-grid">
+                        <div class="breakout-item highlight"><span class="breakout-val" style="color: var(--accent-tel)">${totals.tel.ontem}</span><span class="breakout-label">${labels.ontem}</span></div>
+                        <div class="breakout-item"><span class="breakout-val">${totals.tel.mes}</span><span class="breakout-label">${labels.mes}</span></div>
+                        <div class="breakout-item"><span class="breakout-val" style="opacity:0.6">${totals.tel.pass}</span><span class="breakout-label">${labels.pass}</span></div>
+                    </div>
+                </div>
+                <div class="summary-card zap">
+                    <h3>💬 WhatsApp</h3>
+                    <div class="breakout-grid">
+                        <div class="breakout-item highlight"><span class="breakout-val" style="color: var(--accent-zap)">${totals.zap.ontem}</span><span class="breakout-label">${labels.ontem}</span></div>
+                        <div class="breakout-item"><span class="breakout-val">${totals.zap.mes}</span><span class="breakout-label">${labels.mes}</span></div>
+                        <div class="breakout-item"><span class="breakout-val" style="opacity:0.6">${totals.zap.pass}</span><span class="breakout-label">${labels.pass}</span></div>
+                    </div>
+                </div>
+                <div class="summary-card most">
+                    <h3>📦 Mostruários</h3>
+                    <div class="breakout-grid">
+                        <div class="breakout-item highlight"><span class="breakout-val" style="color: var(--accent-purple)">${totals.most.ontem}</span><span class="breakout-label">${labels.ontem}</span></div>
+                        <div class="breakout-item"><span class="breakout-val">${totals.most.mes}</span><span class="breakout-label">${labels.mes}</span></div>
+                        <div class="breakout-item"><span class="breakout-val" style="opacity:0.6">${totals.most.pass}</span><span class="breakout-label">${labels.pass}</span></div>
+                    </div>
+                </div>
+            `;
 
-                if (CURRENT_SORT.key === 'total_score') {
-                    valA = a.total_tel_atend + a.total_zap_total + a.total_mostruario;
-                    valB = b.total_tel_atend + b.total_zap_total + b.total_mostruario;
-                } else if (CURRENT_SORT.key === 'name') {
-                    valA = a.name.toLowerCase();
-                    valB = b.name.toLowerCase();
-                } else {
-                    const parts = CURRENT_SORT.key.split('_');
-                    if (parts.length > 2 && ['hoje', 'mes', 'passado'].includes(parts[parts.length - 1])) {
-                        let bucket = parts.pop();
-                        if (bucket === 'passado') {
-                            parts.pop(); // tira o 'mes'
-                            bucket = 'mes_passado';
-                        }
-                        const prefix = parts.join('_');
-                        valA = (a[prefix] && a[prefix][bucket]) || 0;
-                        valB = (b[prefix] && b[prefix][bucket]) || 0;
-                    } else if (CURRENT_SORT.key.endsWith('_mes')) {
-                        const prefix = CURRENT_SORT.key.replace('_mes', '');
-                        valA = (a[prefix] && a[prefix].mes) || 0;
-                        valB = (b[prefix] && b[prefix].mes) || 0;
-                    } else if (CURRENT_SORT.key.endsWith('_hoje')) {
-                        const prefix = CURRENT_SORT.key.replace('_hoje', '');
-                        valA = (a[prefix] && a[prefix].hoje) || 0;
-                        valB = (b[prefix] && b[prefix].hoje) || 0;
-                    } else {
-                        valA = a[CURRENT_SORT.key] || 0;
-                        valB = b[CURRENT_SORT.key] || 0;
-                    }
-                }
-
-                if (valA < valB) return CURRENT_SORT.dir === 'desc' ? 1 : -1;
-                if (valA > valB) return CURRENT_SORT.dir === 'desc' ? -1 : 1;
+            const rows = Object.values(ops).sort((a,b) => {
+                let vA = a[CURRENT_SORT.key], vB = b[CURRENT_SORT.key];
+                if (vA < vB) return CURRENT_SORT.dir === 'desc' ? 1 : -1;
+                if (vA > vB) return CURRENT_SORT.dir === 'desc' ? -1 : 1;
                 return 0;
             });
 
-            // Totals
-            const totals = {
-                tel_atend: { hoje: 0, mes: 0, mes_passado: 0 },
-                tel_tempo: { hoje: 0, mes: 0, mes_passado: 0 },
-                zap_total: { hoje: 0, mes: 0, mes_passado: 0 },
-                zap_fin: { hoje: 0, mes: 0, mes_passado: 0 },
-                zap_ativo: 0,
-                zap_aguard: 0,
-                mostruario: { hoje: 0, mes: 0, mes_passado: 0 },
-                
-                total_tel_atend: rows.reduce((s, r) => s + r.total_tel_atend, 0),
-                total_tel_tempo: rows.reduce((s, r) => s + r.total_tel_tempo, 0),
-                total_zap_total: rows.reduce((s, r) => s + r.total_zap_total, 0),
-                total_zap_fin: rows.reduce((s, r) => s + r.total_zap_fin, 0),
-                total_zap_ativo: rows.reduce((s, r) => s + r.total_zap_ativo, 0),
-                total_zap_aguard: rows.reduce((s, r) => s + r.total_zap_aguard, 0),
-                total_mostruario: rows.reduce((s, r) => s + r.total_mostruario, 0)
-            };
-
-            ['tel_atend', 'tel_tempo', 'zap_total', 'zap_fin', 'mostruario'].forEach(metric => {
-                ['hoje', 'mes', 'mes_passado'].forEach(bucket => {
-                    totals[metric][bucket] = rows.reduce((s, r) => s + r[metric][bucket], 0);
-                });
-            });
-            totals.zap_ativo = rows.reduce((s, r) => s + r.zap_ativo, 0);
-            totals.zap_aguard = rows.reduce((s, r) => s + r.zap_aguard, 0);
-
-            const zapFinPct = totals.total_zap_total > 0 ? (totals.total_zap_fin / totals.total_zap_total * 100).toFixed(1) : '0';
-
-            // === BUILD HTML ===
             let html = '';
-
-            // 1. TOP CARDS
-            html += `
-        <div class="top-summary animate-in" style="animation-delay: 0.15s">
-            <div class="summary-group">
-                <div class="summary-header"><span class="icon">📞</span> Telefonia — Período Filtrado</div>
-                <div class="summary-cards">
-                    <div class="card">
-                        <div class="card-label">Atendimentos</div>
-                        <div class="card-value tel">${totals.total_tel_atend}</div>
-                        <div class="card-sub">&gt; 30 segundos</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-label">Tempo Total</div>
-                        <div class="card-value tel" style="font-size: 24px">${formatTempo(totals.total_tel_tempo)}</div>
-                        <div class="card-sub">${totals.total_tel_tempo.toLocaleString('pt-BR')}s</div>
-                    </div>
-                </div>
-            </div>
-            <div class="summary-group">
-                <div class="summary-header"><span class="icon">💬</span> WhatsApp — Período Filtrado</div>
-                <div class="summary-cards">
-                    <div class="card">
-                        <div class="card-label">Conversas</div>
-                        <div class="card-value zap">${totals.total_zap_total}</div>
-                        <div class="card-sub">Iniciadas ou recebidas</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-label">Finalizados</div>
-                        <div class="card-value zap">${totals.total_zap_fin}</div>
-                        <div class="card-sub">${zapFinPct}% de resolução</div>
-                    </div>
-                </div>
-            </div>
-            <div class="summary-group">
-                <div class="summary-header"><span class="icon">📦</span> Mostruários — Período Filtrado</div>
-                <div class="summary-cards">
-                    <div class="card">
-                        <div class="card-label">Mostruários</div>
-                        <div class="card-value" style="color: var(--accent-purple)">${totals.total_mostruario}</div>
-                        <div class="card-sub">Status: Enviado</div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-            // 2. TABLE
-            html += `
-        <div class="table-header animate-in" style="animation-delay: 0.2s">
-            <div class="icon" style="background: rgba(255,255,255,0.05); color: var(--text-dim)">👤</div>
-            <span>Performance por Operador</span>
-        </div>
-        <div class="table-wrapper animate-in" style="animation-delay: 0.3s">
-            <table>
-                <thead>
-                    <tr>
-                        <th rowspan="3" class="sortable ${CURRENT_SORT.key === 'name' ? 'active-sort' : ''}" onclick="toggleSort('name')" style="text-align: left; padding-left: 20px; vertical-align: middle;">
-                            Operador / Ramal ${getSortIcon('name')}
-                        </th>
-                        <th colspan="6" class="th-tel">📞 Telefonia</th>
-                        <th colspan="8" class="th-zap">💬 WhatsApp</th>
-                        <th colspan="3" class="th-most">📦 Mostr.</th>
-                    </tr>
-                    <tr>
-                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Atendimentos</th>
-                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Tempo total</th>
-                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Conversas</th>
-                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Finalizados</th>
-                        <th rowspan="2" class="sortable ${CURRENT_SORT.key === 'zap_ativo' ? 'active-sort' : ''}" onclick="toggleSort('zap_ativo')" style="text-align: center; vertical-align: middle;">Abertos ${getSortIcon('zap_ativo')}</th>
-                        <th rowspan="2" class="sortable ${CURRENT_SORT.key === 'zap_aguard' ? 'active-sort' : ''}" onclick="toggleSort('zap_aguard')" style="text-align: center; vertical-align: middle;">Aguardando ${getSortIcon('zap_aguard')}</th>
-                        <th colspan="3" style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">Mostruários</th>
-                    </tr>
-                    <tr style="font-size: 11px; color: var(--text-dim);">
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_hoje' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_hoje')" style="text-align: center">Hoje ${getSortIcon('tel_atend_hoje')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_mes' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_mes')" style="text-align: center">Este mês ${getSortIcon('tel_atend_mes')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_atend_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('tel_atend_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('tel_atend_mes_passado')}</th>
-
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_hoje' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_hoje')" style="text-align: center">Hoje ${getSortIcon('tel_tempo_hoje')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_mes' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_mes')" style="text-align: center">Este mês ${getSortIcon('tel_tempo_mes')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'tel_tempo_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('tel_tempo_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('tel_tempo_mes_passado')}</th>
-
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_hoje' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_hoje')" style="text-align: center">Hoje ${getSortIcon('zap_total_hoje')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_mes' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_mes')" style="text-align: center">Este mês ${getSortIcon('zap_total_mes')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_total_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('zap_total_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('zap_total_mes_passado')}</th>
-
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_hoje' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_hoje')" style="text-align: center">Hoje ${getSortIcon('zap_fin_hoje')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_mes' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_mes')" style="text-align: center">Este mês ${getSortIcon('zap_fin_mes')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'zap_fin_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('zap_fin_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('zap_fin_mes_passado')}</th>
-
-                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_hoje' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_hoje')" style="text-align: center">Hoje ${getSortIcon('mostruario_hoje')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_mes' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_mes')" style="text-align: center">Este mês ${getSortIcon('mostruario_mes')}</th>
-                        <th class="sortable ${CURRENT_SORT.key === 'mostruario_mes_passado' ? 'active-sort' : ''}" onclick="toggleSort('mostruario_mes_passado')" style="text-align: center">Mês pass. ${getSortIcon('mostruario_mes_passado')}</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            rows.forEach(r => {
+            rows.forEach(op => {
+                const colors = AVATAR_COLORS[op.name] || ['#666','#999'];
                 html += `
                     <tr>
-                        <td>
-                            <div class="name-cell">
-                                ${avatarHtml(r.name, AVATAR_COLORS)}
-                                <div class="name-info">
-                                    <div class="name">${r.name}</div>
-                                    <div class="ramal">${r.subtitle}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.hoje || '0'}</td>
-                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.mes || '0'}</td>
-                        <td style="text-align: center; color: #818cf8; font-weight: 500">${r.tel_atend.mes_passado || '0'}</td>
-
-                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.hoje)}</td>
-                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.mes)}</td>
-                        <td style="text-align: center; color: var(--text-dim); font-size: 13px;">${formatTempo(r.tel_tempo.mes_passado)}</td>
-
-                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.hoje || '0'}</td>
-                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.mes || '0'}</td>
-                        <td style="text-align: center; color: #4ade80; font-weight: 500">${r.zap_total.mes_passado || '0'}</td>
-
-                        <td style="text-align: center; color: #818cf8">${r.zap_fin.hoje || '0'}</td>
-                        <td style="text-align: center; color: #818cf8">${r.zap_fin.mes || '0'}</td>
-                        <td style="text-align: center; color: #818cf8">${r.zap_fin.mes_passado || '0'}</td>
-
-                        <td style="text-align: center; color: #4ade80; font-weight: 600">${r.zap_ativo || '0'}</td>
-                        <td style="text-align: center; color: #fbbf24; font-weight: 600">${r.zap_aguard || '0'}</td>
-
-                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.hoje || '0'}</td>
-                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.mes || '0'}</td>
-                        <td style="text-align: center; color: var(--accent-purple); font-weight: 700">${r.mostruario.mes_passado || '0'}</td>
-                    </tr>`;
+                        <td><div class="name-cell">
+                            <div class="avatar" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${op.name.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                            <div class="name-info"><div class="name">${op.name}</div><div class="sub">${op.sub}</div></div>
+                        </div></td>
+                        <td class="col-group-1"><b>${op.tel_ontem}</b></td><td class="col-group-1"><b>${op.tel_mes}</b></td><td class="col-group-1" style="opacity:0.6">${op.tel_pass}</td>
+                        <td class="col-group-2">${Math.floor(op.tempo_ontem/60)}m</td><td class="col-group-2">${Math.floor(op.tempo_mes/60)}m</td><td class="col-group-2" style="opacity:0.6">${Math.floor(op.tempo_pass/60)}m</td>
+                        <td class="col-group-1" style="color:var(--accent-zap)"><b>${op.zap_ontem}</b></td><td class="col-group-1" style="color:var(--accent-zap)"><b>${op.zap_mes}</b></td><td class="col-group-1" style="opacity:0.6">${op.zap_pass}</td>
+                        <td class="col-group-2" style="color:var(--accent-tel)"><b>${op.fin_ontem}</b></td><td class="col-group-2" style="color:var(--accent-tel)"><b>${op.fin_mes}</b></td><td class="col-group-2" style="opacity:0.6">${op.fin_pass}</td>
+                        <td class="col-group-1"><b>${op.abertos}</b></td>
+                        <td class="col-group-1">${op.aguard > 0 ? `<div class="waiting-badge">${op.aguard}</div>` : '0'}</td>
+                        <td class="col-group-2" style="color:var(--accent-purple)"><b>${op.most_ontem}</b></td><td class="col-group-2" style="color:var(--accent-purple)"><b>${op.most_mes}</b></td><td class="col-group-2" style="opacity:0.6">${op.most_pass}</td>
+                    </tr>
+                `;
             });
 
-            html += `
-                    <tr class="totals-row">
-                        <td style="padding-left: 20px;">TOTAL CONSOLIDADO</td>
-
-                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.hoje}</td>
-                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.mes}</td>
-                        <td style="text-align: center; color: #818cf8">${totals.tel_atend.mes_passado}</td>
-
-                        <td style="text-align: center">${formatTempo(totals.tel_tempo.hoje)}</td>
-                        <td style="text-align: center">${formatTempo(totals.tel_tempo.mes)}</td>
-                        <td style="text-align: center">${formatTempo(totals.tel_tempo.mes_passado)}</td>
-
-                        <td style="text-align: center; color: #4ade80">${totals.zap_total.hoje}</td>
-                        <td style="text-align: center; color: #4ade80">${totals.zap_total.mes}</td>
-                        <td style="text-align: center; color: #4ade80">${totals.zap_total.mes_passado}</td>
-
-                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.hoje}</td>
-                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.mes}</td>
-                        <td style="text-align: center; color: #818cf8">${totals.zap_fin.mes_passado}</td>
-
-                        <td style="text-align: center; color: #4ade80">${totals.zap_ativo}</td>
-                        <td style="text-align: center; color: #fbbf24">${totals.zap_aguard}</td>
-
-                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.hoje}</td>
-                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.mes}</td>
-                        <td style="text-align: center; color: var(--accent-purple)">${totals.mostruario.mes_passado}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>`;
-
-            container.innerHTML = html;
+            html += `<tr class="totals-row">
+                <td style="text-align:left; padding-left:20px;">TOTAL GERAL</td>
+                <td class="col-group-1">${totals.tel.ontem}</td><td class="col-group-1">${totals.tel.mes}</td><td class="col-group-1">${totals.tel.pass}</td>
+                <td class="col-group-2">${Math.floor(totals.tempo.ontem/60)}m</td><td class="col-group-2">${Math.floor(totals.tempo.mes/60)}m</td><td class="col-group-2">${Math.floor(totals.tempo.pass/60)}m</td>
+                <td class="col-group-1">${totals.zap.ontem}</td><td class="col-group-1">${totals.zap.mes}</td><td class="col-group-1">${totals.zap.pass}</td>
+                <td class="col-group-2">${totals.fin.ontem}</td><td class="col-group-2">${totals.fin.mes}</td><td class="col-group-2">${totals.fin.pass}</td>
+                <td class="col-group-1">${totals.abertos}</td><td class="col-group-1">${totals.aguard}</td>
+                <td class="col-group-2">${totals.most.ontem}</td><td class="col-group-2">${totals.most.mes}</td><td class="col-group-2">${totals.most.pass}</td>
+            </tr>`;
+            document.getElementById('table-body').innerHTML = html;
+            document.getElementById('last-update').textContent = new Date().toLocaleString('pt-BR');
         }
 
         function applyFilter() {
-            if (!RAW_DATA) return;
-
-            const fromEl = document.getElementById('dateFrom');
-            const toEl = document.getElementById('dateTo');
-            const from = fromEl.value;
-            const to = toEl.value;
-
-            let telFiltered = RAW_DATA.telefonia;
-            let zapFiltered = RAW_DATA.whatsapp;
-
-            if (from) {
-                telFiltered = telFiltered.filter(r => r.data >= from);
-                zapFiltered = zapFiltered.filter(r => r.data >= from);
-            }
-            if (to) {
-                telFiltered = telFiltered.filter(r => r.data <= to);
-                zapFiltered = zapFiltered.filter(r => r.data <= to);
-            }
-
-            renderDashboard(telFiltered, zapFiltered);
+            const from = document.getElementById('dateFrom').value, to = document.getElementById('dateTo').value;
+            render({
+                telefonia: RAW_DATA.telefonia.filter(r => (!from || r.data >= from) && (!to || r.data <= to)),
+                whatsapp: RAW_DATA.whatsapp.filter(r => (!from || r.data >= from) && (!to || r.data <= to)),
+                mostruario: RAW_DATA.mostruario.filter(r => (!from || r.data >= from) && (!to || r.data <= to))
+            });
         }
 
-        // Load data com cache-busting para evitar travamento em versões antigas
-        fetch('full_data.json?t=' + new Date().getTime())
-            .then(r => {
-                if (!r.ok) throw new Error("Falha ao carregar arquivo de dados.");
-                return r.json();
-            })
-            .then(data => {
-                RAW_DATA = data;
-
-                // Set date inputs
-                document.getElementById('dateFrom').value = data.date_range.min;
-                document.getElementById('dateTo').value = data.date_range.max;
-
-                renderDashboard(data.telefonia, data.whatsapp);
-                
-                // Update footer with current date/time
-                const now = new Date();
-                const fmt = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
-                document.getElementById('lastUpdate').textContent = fmt;
-            })
-            .catch(err => {
-                document.getElementById('dashboard-content').innerHTML =
-                    `<div class="loading" style="color: var(--accent-rose);">Erro ao carregar dados: ${err.message}</div>`;
-            });
+        fetch('full_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
+            RAW_DATA = data;
+            document.getElementById('dateFrom').value = data.date_range.min;
+            document.getElementById('dateTo').value = data.date_range.max;
+            render(data);
+        });
     </script>
 </body>
-
 </html>

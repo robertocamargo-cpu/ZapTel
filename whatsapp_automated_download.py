@@ -30,8 +30,16 @@ async def run_automated_download():
         page = browser.pages[0] if browser.pages else await browser.new_page()
         
         print(f"Navegando para os relatórios: {URL_REPORTS}", flush=True)
-        await page.goto(URL_REPORTS)
-        await page.wait_for_load_state("networkidle")
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                await page.goto(URL_REPORTS, wait_until="load", timeout=60000)
+                await page.wait_for_load_state("networkidle")
+                break
+            except Exception as e:
+                if attempt == max_retries - 1: raise
+                print(f"Falha na navegação: {e}. Tentando novamente...", flush=True)
+                await asyncio.sleep(5)
         
         # Verifica se caiu na página de login (sessão expirou)
         if "login" in page.url:
@@ -41,25 +49,23 @@ async def run_automated_download():
 
         print("Página de relatórios carregada. Configurando filtros...", flush=True)
         
-        # Helper function to get the date ranges
-        def get_3_months_ranges():
+        # Helper function to get the date ranges (2 months approx 60 days)
+        def get_2_months_ranges():
             now = datetime.now()
             ranges = []
             # Mês 1 (Atual)
             start_m1 = datetime(now.year, now.month, 1)
             end_m1 = now
-            ranges.append((start_m1.strftime("%d/%m/%Y"), end_m1.strftime("%d/%m/%Y")))
+            # Adiciona 1 dia para não perder as transações de hoje à tarde/noite
+            end_m1_plus_1 = end_m1 + timedelta(days=1)
+            ranges.append((start_m1.strftime("%d/%m/%Y"), end_m1_plus_1.strftime("%d/%m/%Y")))
             # Mês 2 (Anterior)
             end_m2 = start_m1 - timedelta(days=1)
             start_m2 = datetime(end_m2.year, end_m2.month, 1)
             ranges.append((start_m2.strftime("%d/%m/%Y"), end_m2.strftime("%d/%m/%Y")))
-            # Mês 3 (Retrasado)
-            end_m3 = start_m2 - timedelta(days=1)
-            start_m3 = datetime(end_m3.year, end_m3.month, 1)
-            ranges.append((start_m3.strftime("%d/%m/%Y"), end_m3.strftime("%d/%m/%Y")))
             return ranges
 
-        date_ranges = get_3_months_ranges()
+        date_ranges = get_2_months_ranges()
         downloaded_files = []
 
         # Seletores
@@ -80,7 +86,7 @@ async def run_automated_download():
             await page.wait_for_selector(sel_de, timeout=30000)
 
             for i, (str_de, str_ate) in enumerate(date_ranges):
-                print(f"--- Processando Mês {i+1}/3: de {str_de} até {str_ate} ---", flush=True)
+                print(f"--- Processando Mês {i+1}/{len(date_ranges)}: de {str_de} até {str_ate} ---", flush=True)
                 
                 # Preenche Data De
                 await page.click(sel_de)

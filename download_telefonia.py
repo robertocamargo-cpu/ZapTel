@@ -56,89 +56,82 @@ async def download_report():
             
             print("Navegou para Detalhado Chamadas.")
 
-            # Configurar datas (Hoje e Hoje - 1 mês)
-            now = datetime.now()
-            start_date = now - timedelta(days=90)
-            date_str = f"{start_date.strftime('%Y-%m-%d')} 00:00 - {now.strftime('%Y-%m-%d')} 23:59"
-            print(f"Filtrando período: {date_str}")
+            # Configurar datas (Últimos 30 dias)
+            hoje_dt = datetime.now()
+            de_dt = hoje_dt - timedelta(days=30)
+            str_de = de_dt.strftime("%d/%m/%Y")
+            str_ate = hoje_dt.strftime("%d/%m/%Y")
+            print(f"Buscando período solicitado: {str_de} até {str_ate}")
 
             # Abrir Filtro
-            # Verifica se o painel de filtro já está visível para não fechá-lo acidentalmente
             filter_is_visible = await page.is_visible('form#cdr-tenant-form')
             if not filter_is_visible:
                 print("Abrindo painel de filtro...")
-                await page.wait_for_selector('button.openFilter', state="visible")
                 await page.click('button.openFilter')
-                await asyncio.sleep(2) # Aguarda painel abrir
-            else:
-                print("Painel de filtro já está aberto.")
-
-            # Preencher data
-            print(f"Preenchendo data: {date_str}")
-            date_input = page.locator('input.date-range-time')
-            await date_input.scroll_into_view_if_needed()
-            await date_input.click() # Abre o picker
-            await asyncio.sleep(2)
+                await asyncio.sleep(2)
             
-            # Garante que o foco está no input e limpa
-            await page.keyboard.press("Control+a")
+            # Aplicar filtros via digitação direta para maior confiabilidade
+            print("Configurando daterangepicker via digitação...")
+            daterange_input = page.locator('input.date-range-time')
+            await daterange_input.click()
+            await page.keyboard.press("Meta+A")
             await page.keyboard.press("Backspace")
-            await asyncio.sleep(1)
-            
-            # Digita a data caractere por caractere para disparar eventos
-            await page.keyboard.type(date_str, delay=100)
-            await asyncio.sleep(1)
+            full_range = f"{str_de} 00:00 - {str_ate} 23:59"
+            await daterange_input.type(full_range)
             await page.keyboard.press("Enter")
             await asyncio.sleep(1)
-            
-            # Clicar em Apply no date picker (essencial para daterangepicker)
-            # Buscamos o botão dentro do widget do calendário que deve estar aberto
-            apply_btn = page.locator('.daterangepicker:visible .applyBtn')
-            if await apply_btn.count() > 0:
-                print("Clicando no botão 'Apply' do calendário...")
-                await apply_btn.click()
-                await asyncio.sleep(1)
-            else:
-                print("Botão 'Apply' não encontrado ou não visível. Tentando prosseguir...")
+            await page.keyboard.press("Escape") # Garante que o picker fechou
+            await asyncio.sleep(1)
 
-            # Clicar em BUSCAR
-            print("Clicando em BUSCAR...")
-            # Usando seletor exato pelo valor para evitar outros botões 'btn-critical-primary'
-            buscar_btn = page.locator('input[type="submit"][value="Buscar"]')
-            await buscar_btn.wait_for(state="visible", timeout=10000)
-            await buscar_btn.click()
+            # Tenta com CURRENT primeiro
+            print("Selecionando 'CURRENT' e buscando...")
+            await page.evaluate("document.querySelector('select[name=\"CallRecordBillingTenant[record_selection]\"]').value = 'CURRENT'")
+            await page.evaluate("document.querySelector('select[name=\"CallRecordBillingTenant[record_selection]\"]').dispatchEvent(new Event('change'))")
+            await page.evaluate("document.querySelector('input[type=\"submit\"][value=\"Buscar\"]').click()")
             
+            # Aguarda a tabela atualizar
             await page.wait_for_load_state("networkidle")
-            await asyncio.sleep(5) # Espera extra para a tabela renderizar com os novos dados
-            print("Busca realizada.")
-
-            # Fechar painel de filtro (necessário para o Export aparecer)
-            if await page.is_visible('form#cdr-tenant-form'):
-                print("Fechando painel de filtro...")
-                # Tenta clicar no botão "Back" ou no botão que fecha o filtro
-                await page.locator('.displayFilterBox:visible').first.click()
-                await asyncio.sleep(3)
+            await asyncio.sleep(8)
             
-            # Garante que o painel realmente fechou
-            if await page.is_visible('form#cdr-tenant-form'):
-                print("Tentando fechar filtro novamente via mouse...")
-                await page.mouse.click(10, 10) # Clica em área neutra
-                await asyncio.sleep(2)
+            no_results = await page.is_visible("text=No results found")
+            if no_results:
+                print("Nenhum resultado em CURRENT. Tentando ARCHIVE...")
+                if not await page.is_visible('form#cdr-tenant-form'):
+                    await page.click('button.openFilter')
+                await page.evaluate("document.querySelector('select[name=\"CallRecordBillingTenant[record_selection]\"]').value = 'ARCHIVE'")
+                await page.evaluate("document.querySelector('select[name=\"CallRecordBillingTenant[record_selection]\"]').dispatchEvent(new Event('change'))")
+                await page.click('input[type="submit"][value="Buscar"]')
+                await page.wait_for_load_state("networkidle")
+                await asyncio.sleep(8)
 
-            # Exportar
+            print("Busca concluída.")
+            await page.wait_for_load_state("networkidle")
+            await asyncio.sleep(5)
+            await page.screenshot(path=os.path.join(OUTPUT_DIR, "debug_telefonia_resultados.png"), full_page=True)
+
+            # FECHAR O PAINEL DE FILTRO
+            print("Fechando painel de filtro...")
+            await page.evaluate("""() => {
+                const closeBtn = document.querySelector('a.displayFilterBox, button.openFilter');
+                if (closeBtn && document.querySelector('form#cdr-tenant-form')?.offsetParent !== null) {
+                    closeBtn.click();
+                }
+            }""")
+            await asyncio.sleep(2)
+
+            # Iniciar exportação
             print("Iniciando exportação...")
-            # Aguarda o botão de opções estar presente
-            export_toggle = page.locator('a#toggleOptions:visible')
-            await export_toggle.first.wait_for(state="visible", timeout=15000)
-            
-            # Tenta clicar de forma robusta
+            export_toggle = page.locator('a#toggleOptions')
             await export_toggle.first.scroll_into_view_if_needed()
             await export_toggle.first.click(force=True)
             await asyncio.sleep(2)
             
-            # Tenta clicar em "EXPORT + Media" usando ID específico
-            print("Selecionando opção EXPORT + Media...")
-            export_option = page.locator('li#export-media-button:visible')
+            # Screenshot das opções
+            await page.screenshot(path=os.path.join(OUTPUT_DIR, "debug_telefonia_export_options.png"))
+            
+            print("Selecionando primeira opção de Exportação...")
+            # Tenta clicar na primeira opção da lista que contenha "Export"
+            export_option = page.locator('.dropdown-menu li:visible').first
             await export_option.wait_for(state="visible", timeout=15000)
             
             async with page.expect_download() as download_info:
