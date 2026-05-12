@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PULSAR - Entenda o Score</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0A0B10;
+            --card: #14161F;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #FFFFFF;
+            --text-secondary: #A0A5B1;
+            --royal: #5B65F2;
+            --jade: #10B981;
+            --violet: #8B5CF6;
+            --amber: #F59E0B;
+            --red: #EF4444;
+            --radius: 16px;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 40px;
+            font-weight: 900;
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, #5B65F2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            margin-top: 8px;
+        }
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .section h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .metric-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-name {
+            font-weight: 600;
+        }
+
+        .metric-points {
+            font-weight: 800;
+            color: var(--royal);
+        }
+
+        .meta-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: var(--royal);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-positive { background: rgba(16, 185, 129, 0.1); color: var(--jade); }
+        .badge-negative { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="resumo_dashboard.html" class="back-link">← Voltar para o Dashboard</a>
+        
+        <div class="header">
+            <h1>Score PULSAR 1.0</h1>
+            <p>Como calculamos a performance da sua operação comercial.</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 Composição do Score (Máx. 100 pts)</h2>
+            <p>O Score é uma média ponderada baseada em 4 pilares de atividade e 1 pilar de engajamento/prontidão.</p>
+            
+            <div class="metric-list">
+                <div class="metric-item">
+                    <div>
+                        <div class="metric-name">Telefonia Outbound (Hoje)</div>
+                        <div class="meta-desc">Meta: 20 ligações > 30s.</div>
+                    </div>
+                    <div class="metric-points">Até 20 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>
+                        <div class="metric-name">WhatsApp (Hoje)</div>
+                        <div class="meta-desc">Meta: 30 novos atendimentos.</div>
+                    </div>
+                    <div class="metric-points">Até 20 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>
+                        <div class="metric-name">Conversas Finalizadas (Hoje)</div>
+                        <div class="meta-desc">Meta: 15 atendimentos concluídos.</div>
+                    </div>
+                    <div class="metric-points">Até 10 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>
+                        <div class="metric-name">Mostruários (Mês)</div>
+                        <div class="meta-desc">Meta: 10 envios de mostruário no mês.</div>
+                    </div>
+                    <div class="metric-points">Até 20 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>
+                        <div class="metric-name">Prontidão & Engajamento</div>
+                        <div class="meta-desc">Bonus base por atividade e deduções por gargalos.</div>
+                    </div>
+                    <div class="metric-points">Até 30 pts</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Regras de Dedução (Prontidão)</h2>
+            <p>Mesmo com alta atividade, o score pode ser reduzido se houver inatividade ou acúmulo de tarefas:</p>
+            
+            <div class="metric-list">
+                <div class="metric-item">
+                    <div>Zero Telefonia no dia</div>
+                    <div class="badge badge-negative">-5 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>Zero WhatsApp no dia</div>
+                    <div class="badge badge-negative">-10 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>Mais de 20 atendimentos Abertos</div>
+                    <div class="badge badge-negative">-5 pts</div>
+                </div>
+                <div class="metric-item">
+                    <div>Mais de 2 atendimentos em Aguardando</div>
+                    <div class="badge badge-negative">-5 pts</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Dica PULSAR</h2>
+            <p>O Score é atualizado em tempo real. Para manter uma pontuação **Premium (90+)**, o vendedor deve equilibrar a prospecção ativa (Telefonia) com a agilidade no fechamento de conversas (Finalizados) e a organização da carteira (Abertos/Aguardando).</p>
+        </div>
+    </div>
+</body>
+</html>

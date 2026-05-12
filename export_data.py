@@ -43,19 +43,19 @@ if not df_tel.empty:
 
 # Normalização de nomes
 NAME_MAP = {
-    'Arnaldo': 'Arnaldo Acerbi', 'Arnaldo César': 'Arnaldo Acerbi', 'Arnaldo Acerbi': 'Arnaldo Acerbi',
-    'Aurora': 'Aurora Dutra', 'Aurora Dutra': 'Aurora Dutra',
-    'Juliana': 'Juliana Sanches', 'Juliana Sanches': 'Juliana Sanches',
-    'Paulo': 'Paulo Vinicius', 'Paulo Vinicius': 'Paulo Vinicius',
-    'Poliane': 'Poliane Medeiros', 'Poliane Medeiros': 'Poliane Medeiros',
-    'Angelita': 'Angelita Francisco', 'Angelita Francisco': 'Angelita Francisco',
-    'Roberto': 'Roberto Camargo', 'Roberto Camargo': 'Roberto Camargo'
+    'ARNALDO': 'Arnaldo Acerbi', 'ARNALDO CÉSAR': 'Arnaldo Acerbi', 'ARNALDO ACERBI': 'Arnaldo Acerbi',
+    'AURORA': 'Aurora Dutra', 'AURORA DUTRA': 'Aurora Dutra',
+    'JULIANA': 'Juliana Sanches', 'JULIANA SANCHES': 'Juliana Sanches',
+    'PAULO': 'Paulo Vinicius', 'PAULO VINICIUS': 'Paulo Vinicius',
+    'POLIANE': 'Poliane Medeiros', 'POLIANE MEDEIROS': 'Poliane Medeiros',
+    'ANGELITA': 'Angelita Francisco', 'ANGELITA FRANCISCO': 'Angelita Francisco',
+    'ROBERTO': 'Roberto Camargo', 'ROBERTO CAMARGO': 'Roberto Camargo'
 }
 
 def normalize_name(name):
     if not name or pd.isna(name): return 'Sem atendente'
-    n = str(name).strip()
-    return NAME_MAP.get(n, n)
+    n = str(name).strip().upper()
+    return NAME_MAP.get(n, n.title())
 
 hoje_dt = datetime.now()
 # WhatsApp mantém 60 dias para cobrir o mês anterior
@@ -122,12 +122,27 @@ if os.path.exists(path_mostruario):
         if sheet in mes_map:
             df_mes = pd.read_excel(path_mostruario, sheet_name=sheet, skiprows=1)
             if not df_mes.empty and 'Vendedor' in df_mes.columns:
-                vendedores = df_mes['Vendedor'].dropna()
-                data_iso = f"2026-{mes_map[sheet]}-01"
-                for v in vendedores:
-                    v_norm = normalize_name(v)
+                # Tenta usar a coluna 'Data Solicitação' se existir
+                data_col = 'Data Solicitação' if 'Data Solicitação' in df_mes.columns else None
+                
+                # Filtra apenas linhas onde tem Vendedor
+                df_valid = df_mes.dropna(subset=['Vendedor']).copy()
+                
+                for _, row in df_valid.iterrows():
+                    v_norm = normalize_name(row['Vendedor'])
+                    
+                    # Tenta pegar a data real
+                    try:
+                        if data_col and not pd.isna(row[data_col]):
+                            d_val = pd.to_datetime(row[data_col])
+                            data_iso = d_val.strftime('%Y-%m-%d')
+                        else:
+                            data_iso = f"2026-{mes_map[sheet]}-01"
+                    except:
+                        data_iso = f"2026-{mes_map[sheet]}-01"
+                        
                     mostruario_records.append({'vendedor': v_norm, 'data': data_iso})
-    print(f"Mostruário: {len(mostruario_records)} registros processados.")
+    print(f"Mostruário: {len(mostruario_records)} registros processados com datas reais.")
 
 # Range para o Dashboard (Dia 1 do mês passado até hoje)
 if hoje_dt.month == 1:
